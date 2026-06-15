@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -348,6 +349,7 @@ export class DossierListComponent implements OnInit {
   private dossierService = inject(DossierService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
   
   dossiers = signal<any[]>([]);
@@ -380,8 +382,18 @@ export class DossierListComponent implements OnInit {
   selectedFiles: { [docName: string]: File } = {};
 
   ngOnInit() {
-    this.loadDossiers();
-    this.loadFilterData();
+    // Read query params to prefill filters (e.g., ?statut=nouveau)
+    this.route.queryParams.subscribe(params => {
+      if (params['statut']) {
+        this.filters.update(f => ({ ...f, statut: params['statut'] }));
+      }
+      if (params['action'] === 'new') {
+        // open the request modal when routed with ?action=new
+        setTimeout(() => this.openRequestModal(), 50);
+      }
+      this.loadFilterData();
+      this.loadDossiers();
+    });
   }
 
   loadFilterData() {

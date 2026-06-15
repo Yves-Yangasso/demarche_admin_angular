@@ -68,18 +68,36 @@ import { AuthService } from '../../core/services/auth.service';
             <button class="close-btn" (click)="closeModal()">×</button>
           </div>
           <div class="modal-body">
+            <div class="stepper">
+              <button type="button" class="step-item" [class.active]="currentStep() === 1" [class.done]="currentStep() > 1" (click)="goToStep(1)">
+                <span>1</span>
+                <div><strong>Identite</strong><small>Nom et contact</small></div>
+              </button>
+              <button type="button" class="step-item" [class.active]="currentStep() === 2" [class.done]="currentStep() > 2" [disabled]="!canAccessStep(2)" (click)="goToStep(2)">
+                <span>2</span>
+                <div><strong>Acces</strong><small>Organisation et roles</small></div>
+              </button>
+              <button type="button" class="step-item" [class.active]="currentStep() === 3" [disabled]="!canAccessStep(3)" (click)="goToStep(3)">
+                <span>3</span>
+                <div><strong>Securite</strong><small>Mot de passe</small></div>
+              </button>
+            </div>
+            <div class="step-heading">
+              <span>Etape {{ currentStep() }} sur 3</span>
+              <h4>{{ currentStepTitle() }}</h4>
+            </div>
             <div class="form-grid">
-              <div class="form-group span-half">
+              <div class="form-group span-half" *ngIf="currentStep() === 1">
                 <label>Prénom <span class="required">*</span></label>
                 <input type="text" [(ngModel)]="form.prenom" placeholder="ex: Moussa" class="form-control">
               </div>
-              <div class="form-group span-half">
+              <div class="form-group span-half" *ngIf="currentStep() === 1">
                 <label>Nom <span class="required">*</span></label>
                 <input type="text" [(ngModel)]="form.nom" placeholder="ex: Sarr" class="form-control">
               </div>
               
               <!-- Sélection organisation pour Super Admin -->
-              <div class="form-group span-full" *ngIf="isSuperAdmin()">
+              <div class="form-group span-full" *ngIf="isSuperAdmin() && currentStep() === 2">
                 <label>Organisation <span class="required">*</span></label>
                 <select [(ngModel)]="form.collectivite_id" class="form-control">
                   <option [value]="null">Super Administration (Platform)</option>
@@ -87,15 +105,15 @@ import { AuthService } from '../../core/services/auth.service';
                 </select>
               </div>
 
-              <div class="form-group span-half">
+              <div class="form-group span-half" *ngIf="currentStep() === 1">
                 <label>Téléphone <span class="required">*</span></label>
                 <input type="text" [(ngModel)]="form.telephone" placeholder="ex: +221770000000" class="form-control">
               </div>
-              <div class="form-group span-half">
+              <div class="form-group span-half" *ngIf="currentStep() === 1">
                 <label>Email</label>
                 <input type="email" [(ngModel)]="form.email" placeholder="ex: agent@mairie.sn" class="form-control">
               </div>
-              <div class="form-group span-half">
+              <div class="form-group span-half" *ngIf="currentStep() === 2">
                 <label>Rôle Système <span class="required">*</span></label>
                 <select [(ngModel)]="form.role" class="form-control">
                   <option *ngIf="!isSuperAdmin()" value="agent">Agent</option>
@@ -105,7 +123,7 @@ import { AuthService } from '../../core/services/auth.service';
               </div>
 
               <!-- Rôle Hiérarchique (Métier) -->
-              <div class="form-group span-half" *ngIf="!isSuperAdmin()">
+              <div class="form-group span-half" *ngIf="!isSuperAdmin() && currentStep() === 2">
                 <label>Rôle Hiérarchique (Workflow)</label>
                 <select [(ngModel)]="form.role_organisation_id" class="form-control">
                   <option [value]="null">Aucun rôle spécifique</option>
@@ -113,7 +131,7 @@ import { AuthService } from '../../core/services/auth.service';
                 </select>
               </div>
 
-              <div class="form-group span-half">
+              <div class="form-group span-half" *ngIf="currentStep() === 3">
                 <label>Mot de passe <span class="required">*</span></label>
                 <input type="password" [(ngModel)]="form.password" placeholder="••••••••" class="form-control">
               </div>
@@ -121,7 +139,9 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" (click)="closeModal()">Annuler</button>
-            <button class="btn btn-primary" (click)="save()" [disabled]="!isFormValid() || saving()">
+            <button class="btn btn-secondary" *ngIf="currentStep() > 1" (click)="previousStep()">Retour</button>
+            <button class="btn btn-primary" *ngIf="!isLastStep()" (click)="nextStep()" [disabled]="!isCurrentStepValid()">Continuer</button>
+            <button class="btn btn-primary" *ngIf="isLastStep()" (click)="save()" [disabled]="!isFormValid() || saving()">
               {{ saving() ? 'Création...' : 'Créer le compte' }}
             </button>
           </div>
@@ -158,6 +178,19 @@ import { AuthService } from '../../core/services/auth.service';
     .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; }
     .modal-body { padding: 1.5rem; }
     .modal-footer { padding: 1.25rem 1.5rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 0.75rem; }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .stepper { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem; }
+    .step-item { border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 10px; padding: 0.8rem; display: flex; align-items: center; gap: 0.7rem; text-align: left; color: #64748b; cursor: pointer; transition: all 0.2s; min-height: 72px; }
+    .step-item:disabled { opacity: 0.55; cursor: not-allowed; }
+    .step-item span { width: 30px; height: 30px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: #e2e8f0; color: #475569; font-weight: 800; flex: 0 0 auto; }
+    .step-item strong { display: block; color: #334155; font-size: 0.82rem; }
+    .step-item small { display: block; margin-top: 0.125rem; font-size: 0.7rem; line-height: 1.2; }
+    .step-item.active { background: #eff6ff; border-color: #93c5fd; box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12); }
+    .step-item.active span, .step-item.done span { background: #2563eb; color: white; }
+    .step-heading { margin-bottom: 1rem; }
+    .step-heading span { color: #2563eb; font-size: 0.76rem; font-weight: 700; text-transform: uppercase; }
+    .step-heading h4 { margin: 0.25rem 0 0; font-size: 1.05rem; color: #0f172a; }
 
     .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
     .span-half { grid-column: span 1; }
@@ -168,6 +201,14 @@ import { AuthService } from '../../core/services/auth.service';
 
     .animate-scale { animation: scaleUp 0.15s ease-out; }
     @keyframes scaleUp { from { transform: scale(0.97); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @media (max-width: 720px) {
+      .modal-overlay { padding: 1rem; align-items: flex-start; overflow-y: auto; }
+      .stepper { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .span-half, .span-full { grid-column: span 1; }
+      .modal-footer { flex-wrap: wrap; }
+      .modal-footer .btn { flex: 1 1 140px; justify-content: center; }
+    }
   `]
 })
 export class UtilisateurListComponent implements OnInit {
@@ -181,6 +222,7 @@ export class UtilisateurListComponent implements OnInit {
   roleOrganisations = signal<any[]>([]);
   showModal = signal<boolean>(false);
   saving = signal<boolean>(false);
+  currentStep = signal<number>(1);
 
   form = {
     nom: '',
@@ -258,11 +300,60 @@ export class UtilisateurListComponent implements OnInit {
       collectivite_id: null,
       role_organisation_id: null
     };
+    this.currentStep.set(1);
     this.showModal.set(true);
   }
 
   closeModal() {
     this.showModal.set(false);
+  }
+
+  currentStepTitle(): string {
+    if (this.currentStep() === 1) return 'Identite et contact';
+    if (this.currentStep() === 2) return 'Acces et rattachement';
+    return 'Securite du compte';
+  }
+
+  isLastStep(): boolean {
+    return this.currentStep() === 3;
+  }
+
+  canAccessStep(step: number): boolean {
+    if (step <= 1) return true;
+    if (step === 2) return this.isStepValid(1);
+    return this.isStepValid(1) && this.isStepValid(2);
+  }
+
+  goToStep(step: number) {
+    if (step >= 1 && step <= 3 && this.canAccessStep(step)) {
+      this.currentStep.set(step);
+    }
+  }
+
+  nextStep() {
+    if (!this.isLastStep() && this.isCurrentStepValid()) {
+      this.currentStep.update(step => step + 1);
+    }
+  }
+
+  previousStep() {
+    if (this.currentStep() > 1) {
+      this.currentStep.update(step => step - 1);
+    }
+  }
+
+  isCurrentStepValid(): boolean {
+    return this.isStepValid(this.currentStep());
+  }
+
+  isStepValid(step: number): boolean {
+    if (step === 1) {
+      return !!(this.form.prenom && this.form.nom && this.form.telephone);
+    }
+    if (step === 2) {
+      return !!this.form.role;
+    }
+    return !!this.form.password;
   }
 
   isFormValid(): boolean {

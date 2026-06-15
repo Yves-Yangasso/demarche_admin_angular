@@ -18,7 +18,7 @@ Chart.register(...registerables);
       <div class="dashboard-header">
         <div *ngIf="!isSuperAdmin()">
           <h1>{{ isAgent() ? 'Mon Tableau de bord' : 'Tableau de bord avancé' }}</h1>
-          <p class="subtitle">{{ isAgent() ? 'Suivi de mes dossiers et de mes performances.' : 'Analyses et variations de l\'activité administrative.' }}</p>
+          <p class="subtitle">Vue synthétique des indicateurs.</p>
         </div>
         <div *ngIf="isSuperAdmin()">
           <h1>Performance des Organisations</h1>
@@ -34,6 +34,7 @@ Chart.register(...registerables);
             <option value="bar">Barres</option>
             <option value="line">Lignes</option>
           </select>
+          
         </div>
       </div>
 
@@ -64,7 +65,7 @@ Chart.register(...registerables);
         <!-- TABLEAU DE PERFORMANCE -->
         <section class="card org-perf-section" *ngIf="globalStats(); else loading">
           <div class="card-header">
-            <h3>Réseau TerreAdmin</h3>
+            <h3>Réseau SunuDëkk</h3>
             <button class="btn-text" (click)="voirOrganisations()">Gérer les organisations</button>
           </div>
           <div class="table-responsive">
@@ -109,16 +110,16 @@ Chart.register(...registerables);
       <!-- VUE ADMIN / AGENT / CITOYEN -->
       <ng-container *ngIf="!isSuperAdmin()">
         <div class="stats-grid" *ngIf="stats(); else loading">
-          <div class="stat-card">
+          <div class="stat-card clickable" (click)="openDossiersByStatus('nouveau')" title="Voir les dossiers nouveaux">
             <div class="stat-icon grey">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             </div>
             <div class="stat-info">
-              <span class="label">En attente</span>
+              <span class="label">Nouveaux</span>
               <span class="value">{{ stats().par_statut.nouveau || 0 }}</span>
             </div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card clickable" (click)="openDossiersByStatus('en_cours')" title="Voir les dossiers en cours">
             <div class="stat-icon blue">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg>
             </div>
@@ -127,39 +128,39 @@ Chart.register(...registerables);
               <span class="value">{{ stats().par_statut.en_cours || 0 }}</span>
             </div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card clickable" (click)="openDossiersByStatus('doc_requis')" title="Voir les dossiers nécessitant des documents">
             <div class="stat-icon purple">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
             </div>
             <div class="stat-info">
-              <span class="label">Complémentaire</span>
+              <span class="label">Documents requis</span>
               <span class="value">{{ stats().par_statut.doc_requis || 0 }}</span>
             </div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card clickable" (click)="openDossiersByStatus('en_validation')" title="Voir les dossiers en validation">
             <div class="stat-icon yellow">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             </div>
             <div class="stat-info">
-              <span class="label">Approuvé</span>
+              <span class="label">En validation</span>
               <span class="value">{{ stats().par_statut.en_validation || 0 }}</span>
             </div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card clickable" (click)="openDossiersByStatus('rejete')" title="Voir les dossiers rejetés">
             <div class="stat-icon red">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
             </div>
             <div class="stat-info">
-              <span class="label">Rejeté</span>
+              <span class="label">Rejetés</span>
               <span class="value">{{ stats().par_statut.rejete || 0 }}</span>
             </div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card clickable" (click)="openDossiersByStatus('cloture')" title="Voir les dossiers clôturés">
             <div class="stat-icon green">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             </div>
             <div class="stat-info">
-              <span class="label">Clôturé</span>
+              <span class="label">Clôturés</span>
               <span class="value">{{ stats().par_statut.cloture || 0 }}</span>
             </div>
           </div>
@@ -194,10 +195,10 @@ Chart.register(...registerables);
             <table class="recent-table">
               <thead>
                 <tr>
-                  <th>Numéro</th>
-                  <th>Titre</th>
-                  <th>Citoyen</th>
-                  <th>Date</th>
+                  <th>Numéro de dossier</th>
+                  <th>Intitulé</th>
+                  <th>Demandeur</th>
+                  <th>Date de soumission</th>
                   <th>Statut</th>
                   <th>Action</th>
                 </tr>
@@ -208,7 +209,7 @@ Chart.register(...registerables);
                   <td>{{ d.titre }}</td>
                   <td>{{ d.citoyen?.prenom }} {{ d.citoyen?.nom }}</td>
                   <td>{{ d.date_soumission | date:'dd/MM/yyyy' }}</td>
-                  <td><span class="status-badge" [ngClass]="d.statut">{{ d.statut }}</span></td>
+                  <td><span class="status-badge" [ngClass]="d.statut">{{ displayStatus(d.statut) }}</span></td>
                   <td>
                     <button class="btn-icon" (click)="goToDossier(d.id)">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -237,6 +238,8 @@ Chart.register(...registerables);
     
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
     .stat-card { background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 1rem; }
+    .stat-card.clickable { cursor: pointer; transition: transform 0.12s ease, box-shadow 0.12s ease; }
+    .stat-card.clickable:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(13, 42, 148, 0.08); }
     .stat-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
     .stat-icon.blue { background: #eff6ff; color: #2563eb; }
     .stat-icon.red { background: #fef2f2; color: #dc2626; }
@@ -244,8 +247,8 @@ Chart.register(...registerables);
     .stat-icon.purple { background: #f5f3ff; color: #7c3aed; }
     .stat-icon.yellow { background: #fffbeb; color: #d97706; }
     .stat-icon.green { background: #f0fdf4; color: #16a34a; }
-    .label { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
-    .value { font-size: 1.5rem; font-weight: 700; color: #0f172a; display: block; }
+    .label { font-size: 0.875rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
+    .value { font-size: 1.75rem; font-weight: 800; color: #0f172a; display: block; }
 
     .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
     .card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; }
@@ -290,6 +293,28 @@ Chart.register(...registerables);
   `]
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
+  // Prompts réservés à l'IA — NE PAS AFFICHER DANS L'UI
+  private readonly aiPromptAgent = "Suivi de mes dossiers et de mes performances.";
+  private readonly aiPromptDefault = "Analyses et variations de l'activité administrative.";
+
+  // Exemple d'accès au prompt pour usage interne ou appel IA
+  getAiPrompt(): string {
+    return this.isAgent() ? this.aiPromptAgent : this.aiPromptDefault;
+  }
+
+  displayStatus(code?: string): string {
+    if (!code) return '';
+    const map: any = {
+      'nouveau': 'Nouveau',
+      'en_cours': 'En cours',
+      'doc_requis': 'Documents requis',
+      'en_validation': 'En validation',
+      'rejete': 'Rejeté',
+      'cloture': 'Clôturé'
+    };
+    if (map[code]) return map[code];
+    return code.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+  }
   @ViewChild('volumeChart') volumeCanvas!: ElementRef;
   @ViewChild('categoryChart') categoryCanvas!: ElementRef;
   @ViewChild('orgVolumeChart') orgVolumeCanvas!: ElementRef;
@@ -495,5 +520,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         options: { responsive: true, maintainAspectRatio: false }
       });
     }
+  }
+
+  openDossiersByStatus(statut: string) {
+    this.router.navigate(['/dossiers'], { queryParams: { statut } });
   }
 }

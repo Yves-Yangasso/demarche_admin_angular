@@ -79,15 +79,18 @@ import { ToastService } from '../../core/services/toast.service';
         <div class="search-filter-container card fade-in">
           <div class="search-wrapper">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" placeholder="Rechercher une démarche (nom, code...)" (input)="filterDemarches($event)" class="search-input">
+            <input type="text" placeholder="Rechercher une démarche" (input)="filterDemarches($event)" class="search-input">
           </div>
           <div class="vertical-divider"></div>
           <div class="category-filter">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-            <select (change)="filterByCategory($event)" class="filter-select">
-              <option value="">Toutes les catégories</option>
-              <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.nom }}</option>
-            </select>
+            <div class="select-wrapper">
+              <select (change)="filterByCategory($event)" class="filter-select">
+                <option value="">Toutes les catégories</option>
+                <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.nom }}</option>
+              </select>
+              <span class="chevron">▾</span>
+            </div>
           </div>
         </div>
 
@@ -103,32 +106,45 @@ import { ToastService } from '../../core/services/toast.service';
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let dem of demarches()">
-                <td>
-                  <strong>{{ dem.nom }}</strong>
-                  <div class="demarche-code">{{ dem.code }} • {{ dem.nom_wolof || '-' }}</div>
-                </td>
-                <td>
-                  <span class="wf-status-pill" [class.active]="dem.workflow">
-                    {{ dem.workflow ? 'Workflow (' + dem.workflow.steps.length + ' étapes)' : 'Validation simple' }}
-                  </span>
-                </td>
-                <td>
-                  <div class="meta-row"><strong>{{ dem.delai_traitement_jours }} j</strong></div>
-                  <div class="meta-row amount">{{ dem.frais | number }} F</div>
-                </td>
-                <td>
-                   <div class="counts">
-                     <span class="count docs">{{ dem.documents_requis?.length || 0 }} docs</span>
-                     <span class="count criteria">{{ dem.criteres?.length || 0 }} crit.</span>
-                   </div>
-                </td>
-                <td>
-                  <div class="table-actions" *ngIf="isWriteAllowed()">
-                    <button class="btn-icon edit" (click)="openDemarcheModal(dem)" title="Modifier"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                    <button class="btn-icon delete" (click)="desactiverDemarche(dem)" title="Supprimer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                  </div>
-                </td>
+              <ng-container *ngFor="let group of demarchesByCategory()">
+                <tr class="category-row">
+                  <td colspan="5">
+                    <div class="category-row-content">
+                      <span>{{ group.category.nom }}</span>
+                      <small>{{ group.items.length }} procédure{{ group.items.length > 1 ? 's' : '' }}</small>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngFor="let dem of group.items">
+                  <td>
+                    <strong>{{ dem.nom }}</strong>
+                    <div class="demarche-code">{{ dem.code }} • {{ dem.nom_wolof || '-' }}</div>
+                  </td>
+                  <td>
+                    <span class="wf-status-pill" [class.active]="dem.workflow">
+                      {{ dem.workflow ? 'Workflow (' + dem.workflow.steps.length + ' étapes)' : 'Validation simple' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="meta-row"><strong>{{ dem.delai_traitement_jours }} j</strong></div>
+                    <div class="meta-row amount">{{ dem.frais | number }} F</div>
+                  </td>
+                  <td>
+                     <div class="counts">
+                       <span class="count docs">{{ requirementDocumentLabel(dem.documents_requis?.length || 0) }}</span>
+                       <span class="count criteria">{{ requirementCriterionLabel(dem.criteres?.length || 0) }}</span>
+                     </div>
+                  </td>
+                  <td>
+                    <div class="table-actions" *ngIf="isWriteAllowed()">
+                      <button class="btn-icon edit" (click)="openDemarcheModal(dem)" title="Modifier"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                      <button class="btn-icon delete" (click)="desactiverDemarche(dem)" title="Supprimer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+              <tr *ngIf="demarchesByCategory().length === 0">
+                <td colspan="5" class="empty-table">Aucune procédure trouvée pour cette catégorie.</td>
               </tr>
             </tbody>
           </table>
@@ -364,6 +380,10 @@ import { ToastService } from '../../core/services/toast.service';
     .premium-table { width: 100%; border-collapse: collapse; text-align: left; }
     .premium-table th { padding: 1.25rem 1rem; color: #64748b; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
     .premium-table td { padding: 1.25rem 1rem; border-bottom: 1.5px solid #f8fafc; font-size: 0.9rem; }
+    .category-row td { padding: 0.8rem 1rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+    .category-row-content { display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: #334155; font-weight: 800; }
+    .category-row-content small { color: #64748b; font-size: 0.75rem; font-weight: 700; }
+    .empty-table { text-align: center; color: #64748b; font-weight: 600; padding: 2rem !important; }
     .demarche-code { font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; font-weight: 600; }
     .wf-status-pill { font-size: 0.75rem; padding: 4px 10px; border-radius: 9999px; background: #f1f5f9; color: #64748b; font-weight: 700; }
     .wf-status-pill.active { background: #e0f2fe; color: #0369a1; border: 1.5px solid #bae6fd; }
@@ -422,7 +442,11 @@ import { ToastService } from '../../core/services/toast.service';
     .search-input { width: 100%; border: none; outline: none; font-size: 0.95rem; color: #1e293b; font-weight: 500; }
     .search-input::placeholder { color: #94a3b8; }
     .category-filter { display: flex; align-items: center; gap: 0.75rem; color: #64748b; }
-    .filter-select { border: none; outline: none; background: none; font-size: 0.9rem; font-weight: 700; color: #475569; cursor: pointer; padding-right: 1.5rem; }
+    .category-filter svg { color: #2563eb; }
+    .select-wrapper { position: relative; display: inline-block; }
+    .filter-select { appearance: none; -webkit-appearance: none; -moz-appearance: none; padding: 0.6rem 1.8rem 0.6rem 0.9rem; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.95rem; font-weight: 700; color: #475569; cursor: pointer; background: #fff; min-width: 220px; }
+    .filter-select:focus { outline: none; border-color: #2563eb; box-shadow: 0 6px 18px rgba(37,99,235,0.08); }
+    .select-wrapper .chevron { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #64748b; font-size: 0.9rem; }
 
     .fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -441,6 +465,43 @@ export class ProceduresAdminComponent implements OnInit {
   roles = signal<any[]>([]);
   
   demarcheFilters = signal<any>({ search: '', categorie_id: '' });
+  filteredDemarches = computed(() => {
+    const filters = this.demarcheFilters();
+    const search = String(filters.search || '').trim().toLowerCase();
+    const selectedCategory = this.categories().find(cat => String(cat.id) === String(filters.categorie_id || ''));
+
+    return this.demarches().filter(dem => {
+      const matchesSearch = !search || [
+        dem.nom,
+        dem.code,
+        dem.nom_wolof,
+        dem.description
+      ].some(value => String(value || '').toLowerCase().includes(search));
+
+      const matchesCategory = !selectedCategory || this.matchesDemarcheCategory(dem, selectedCategory);
+
+      return matchesSearch && matchesCategory;
+    });
+  });
+  demarchesByCategory = computed(() => {
+    const groups = new Map<string, { category: any; items: any[] }>();
+
+    for (const dem of this.filteredDemarches()) {
+      const category = this.findDemarcheCategory(dem) || {
+        id: 'uncategorized',
+        nom: 'Sans catégorie'
+      };
+      const key = String(category.id ?? category.code ?? category.nom);
+
+      if (!groups.has(key)) {
+        groups.set(key, { category, items: [] });
+      }
+
+      groups.get(key)!.items.push(dem);
+    }
+
+    return Array.from(groups.values());
+  });
   
   loading = signal(false);
   saving = signal(false);
@@ -486,29 +547,143 @@ export class ProceduresAdminComponent implements OnInit {
   loadCategories() { this.dossierService.getCategories().subscribe(res => this.categories.set(res)); }
   
   loadDemarches() { 
-    const params = { ...this.demarcheFilters() };
-    if (!params.categorie_id) delete params.categorie_id;
-    if (!params.search) delete params.search;
-    
-    this.dossierService.getDemarches(params).subscribe(res => this.demarches.set(res)); 
+    this.dossierService.getDemarches().subscribe({
+      next: (res) => {
+        const list = this.extractDemarchesList(res);
+        this.demarches.set(list);
+        this.cacheDemarches(list);
+      },
+      error: (err) => {
+        const cached = this.getCachedDemarches();
+        if (cached.length) {
+          this.demarches.set(cached);
+          this.toastService.info('Démarches affichées depuis le cache local');
+          return;
+        }
+
+        const message = err?.status === 429
+          ? 'Trop de requêtes vers le serveur. Réessayez dans quelques minutes.'
+          : 'Impossible de charger les démarches';
+        this.toastService.error(message);
+      }
+    }); 
+  }
+
+  private extractDemarchesList(res: any): any[] {
+    if (Array.isArray(res)) return res;
+    if (!res || typeof res !== 'object') return [];
+
+    const candidates = [
+      res.demarches,
+      res.type_demarches,
+      res.items,
+      res.results,
+      res.data
+    ];
+
+    for (const candidate of candidates) {
+      const list = this.extractDemarchesList(candidate);
+      if (list.length) return list;
+    }
+
+    return [];
+  }
+
+  private cacheDemarches(list: any[]) {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('procedures_admin_demarches', JSON.stringify(list));
+  }
+
+  private getCachedDemarches(): any[] {
+    if (typeof window === 'undefined') return [];
+
+    const raw = localStorage.getItem('procedures_admin_demarches');
+    if (!raw) return [];
+
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      localStorage.removeItem('procedures_admin_demarches');
+      return [];
+    }
+  }
+
+  private findDemarcheCategory(dem: any): any {
+    return this.categories().find(cat => this.matchesDemarcheCategory(dem, cat));
+  }
+
+  private matchesDemarcheCategory(dem: any, cat: any): boolean {
+    const demValues = this.getDemarcheCategoryValues(dem);
+    const catValues = [
+      cat?.id,
+      cat?.code,
+      cat?.nom
+    ].map(value => this.normalizeCategoryValue(value)).filter(Boolean);
+
+    return catValues.some(value => demValues.includes(value));
+  }
+
+  private getDemarcheCategoryValues(dem: any): string[] {
+    const values = [
+      dem?.categorie_id,
+      dem?.category_id,
+      dem?.categorie_dossier_id,
+      dem?.category_dossier_id,
+      dem?.type_categorie_id,
+      dem?.categorie_code,
+      dem?.category_code,
+      dem?.categorie_nom,
+      dem?.category_name,
+      dem?.categorie,
+      dem?.category,
+      dem?.categorie?.id,
+      dem?.categorie?.code,
+      dem?.categorie?.nom,
+      dem?.category?.id,
+      dem?.category?.code,
+      dem?.category?.nom,
+      dem?.category?.name
+    ];
+
+    return values
+      .map(value => this.normalizeCategoryValue(value))
+      .filter(Boolean);
+  }
+
+  private normalizeCategoryValue(value: any): string {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'object') {
+      return this.normalizeCategoryValue(value.id ?? value.code ?? value.nom ?? value.name);
+    }
+    return String(value).trim().toLowerCase();
   }
 
   filterDemarches(event: any) {
     this.demarcheFilters.update(f => ({ ...f, search: event.target.value }));
-    this.loadDemarches();
   }
 
   filterByCategory(event: any) {
     this.demarcheFilters.update(f => ({ ...f, categorie_id: event.target.value }));
-    this.loadDemarches();
   }
 
   loadWorkflows() { this.http.get<any[]>('/api/workflows').subscribe(res => this.workflows.set(res)); }
   loadRoles() { this.http.get<any[]>('/api/roles').subscribe(res => this.roles.set(res)); }
 
-  getDemarcheNom(id: number) { return this.demarches().find(d => d.id === id)?.nom || 'Inconnue'; }
+  getDemarcheNom(id: number) {
+    const list = Array.isArray(this.demarches()) ? this.demarches() : [];
+    return list.find(d => d.id === id)?.nom || 'Inconnue';
+  }
 
   // ── CATEGORY ACTIONS ──
+  requirementDocumentLabel(count: number): string {
+    return `${count} ${count > 1 ? 'documents' : 'document'}`;
+  }
+
+  requirementCriterionLabel(count: number): string {
+    return `${count} ${count > 1 ? 'critères' : 'critère'}`;
+  }
+
   openCategoryModal(cat?: any) {
     if (cat) {
       this.editingCategory.set(cat);
