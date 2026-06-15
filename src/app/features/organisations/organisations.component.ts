@@ -115,20 +115,39 @@ import { LayoutComponent } from '../../shared/components/layout/layout.component
             <h3>{{ editingOrgId ? 'Modifier l\\'Organisation' : 'Nouvelle Collectivité & Administrateur' }}</h3>
             <button class="close-btn" (click)="closeModal()">×</button>
           </div>
-          <div class="modal-body modal-scroll">
+          <div class="modal-body">
+            <div class="stepper">
+              <button type="button" class="step-item" [class.active]="currentStep() === 1" [class.done]="currentStep() > 1" (click)="goToStep(1)">
+                <span>1</span>
+                <div><strong>Identite</strong><small>Code, nom et type</small></div>
+              </button>
+              <button type="button" class="step-item" [class.active]="currentStep() === 2" [class.done]="currentStep() > 2" [disabled]="!canAccessStep(2)" (click)="goToStep(2)">
+                <span>2</span>
+                <div><strong>Coordonnees</strong><small>Localisation et contact</small></div>
+              </button>
+              <button *ngIf="!editingOrgId" type="button" class="step-item" [class.active]="currentStep() === 3" [disabled]="!canAccessStep(3)" (click)="goToStep(3)">
+                <span>3</span>
+                <div><strong>Admin</strong><small>Compte initial</small></div>
+              </button>
+            </div>
+            <div class="step-heading">
+              <span>Etape {{ currentStep() }} sur {{ totalSteps() }}</span>
+              <h4>{{ currentStepTitle() }}</h4>
+            </div>
             <div class="form-grid">
+              <ng-container *ngIf="currentStep() === 1">
               
               <div class="section-divider span-full">Informations de la Collectivité</div>
 
-              <div class="form-group span-half">
+              <div class="form-group span-half" *ngIf="currentStep() === 1">
                 <label>Code de l'organisation <span class="required">*</span></label>
                 <input type="text" [(ngModel)]="form.code" placeholder="ex: COM-DKR-001" class="form-control">
               </div>
-              <div class="form-group span-half">
+              <div class="form-group span-half" *ngIf="currentStep() === 1">
                 <label>Nom <span class="required">*</span></label>
                 <input type="text" [(ngModel)]="form.nom" placeholder="ex: Mairie de Dakar" class="form-control">
               </div>
-              <div class="form-group span-half">
+              <div class="form-group span-half" *ngIf="currentStep() === 1">
                 <label>Type <span class="required">*</span></label>
                 <select [(ngModel)]="form.type" class="form-control">
                   <option value="commune">Commune</option>
@@ -136,6 +155,9 @@ import { LayoutComponent } from '../../shared/components/layout/layout.component
                   <option value="région">Région</option>
                 </select>
               </div>
+              </ng-container>
+
+              <ng-container *ngIf="currentStep() === 2">
               <div class="form-group span-half">
                 <label>Région</label>
                 <input type="text" [(ngModel)]="form.region" placeholder="ex: Dakar" class="form-control">
@@ -156,9 +178,10 @@ import { LayoutComponent } from '../../shared/components/layout/layout.component
                 <label>Adresse Physique</label>
                 <input type="text" [(ngModel)]="form.adresse" placeholder="ex: Rue 12, Dakar" class="form-control">
               </div>
+              </ng-container>
 
               <!-- Section Administrateur visible uniquement en création -->
-              <ng-container *ngIf="!editingOrgId">
+              <ng-container *ngIf="!editingOrgId && currentStep() === 3">
                 <div class="section-divider span-full">Compte Super-Administrateur Local</div>
                 <div class="form-group span-half">
                   <label>Prénom de l'admin <span class="required">*</span></label>
@@ -185,8 +208,10 @@ import { LayoutComponent } from '../../shared/components/layout/layout.component
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" (click)="closeModal()">Annuler</button>
-            <button class="btn btn-primary" (click)="save()" [disabled]="!isFormValid() || saving()">
-              {{ saving() ? 'Traitement...' : (editingOrgId ? 'Enregistrer les modifications' : 'Créer l\'Organisation') }}
+            <button class="btn btn-secondary" *ngIf="currentStep() > 1" (click)="previousStep()">Retour</button>
+            <button class="btn btn-primary" *ngIf="!isLastStep()" (click)="nextStep()" [disabled]="!isCurrentStepValid()">Continuer</button>
+            <button class="btn btn-primary" *ngIf="isLastStep()" (click)="save()" [disabled]="!isFormValid() || saving()">
+              {{ primaryActionLabel() }}
             </button>
           </div>
         </div>
@@ -241,6 +266,18 @@ import { LayoutComponent } from '../../shared/components/layout/layout.component
     .modal-body { padding: 1.5rem; }
     .modal-scroll { overflow-y: auto; max-height: 70vh; }
     .modal-footer { padding: 1.25rem 1.5rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 0.75rem; }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .stepper { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem; }
+    .step-item { border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 10px; padding: 0.875rem; display: flex; align-items: center; gap: 0.75rem; text-align: left; color: #64748b; cursor: pointer; transition: all 0.2s; min-height: 76px; }
+    .step-item:disabled { opacity: 0.55; cursor: not-allowed; }
+    .step-item span { width: 32px; height: 32px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: #e2e8f0; color: #475569; font-weight: 800; flex: 0 0 auto; }
+    .step-item strong { display: block; color: #334155; font-size: 0.875rem; }
+    .step-item small { display: block; margin-top: 0.125rem; font-size: 0.72rem; line-height: 1.2; }
+    .step-item.active { background: #eff6ff; border-color: #93c5fd; box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12); }
+    .step-item.active span, .step-item.done span { background: #2563eb; color: white; }
+    .step-heading { margin-bottom: 1rem; }
+    .step-heading span { color: #2563eb; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; }
+    .step-heading h4 { margin: 0.25rem 0 0; font-size: 1.15rem; color: #0f172a; }
 
     .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
     .span-half { grid-column: span 1; }
@@ -255,6 +292,13 @@ import { LayoutComponent } from '../../shared/components/layout/layout.component
     .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem; color: #64748b; gap: 1rem; }
     .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 720px) {
+      .modal-overlay { padding: 1rem; align-items: flex-start; overflow-y: auto; }
+      .form-grid { grid-template-columns: 1fr; }
+      .span-half, .span-full { grid-column: span 1; }
+      .modal-footer { flex-wrap: wrap; }
+      .modal-footer .btn { flex: 1 1 140px; justify-content: center; }
+    }
   `]
 })
 export class OrganisationsComponent implements OnInit {
@@ -265,6 +309,7 @@ export class OrganisationsComponent implements OnInit {
   loading = signal<boolean>(false);
   saving = signal<boolean>(false);
   showModal = signal<boolean>(false);
+  currentStep = signal<number>(1);
   editingOrgId: number | null = null;
 
   form = {
@@ -349,6 +394,7 @@ export class OrganisationsComponent implements OnInit {
       admin_email: '',
       admin_password: ''
     };
+    this.currentStep.set(1);
     this.showModal.set(true);
   }
 
@@ -371,11 +417,75 @@ export class OrganisationsComponent implements OnInit {
       admin_email: '',
       admin_password: ''
     };
+    this.currentStep.set(1);
     this.showModal.set(true);
   }
 
   closeModal() {
     this.showModal.set(false);
+  }
+
+  totalSteps(): number {
+    return this.editingOrgId ? 2 : 3;
+  }
+
+  currentStepTitle(): string {
+    if (this.currentStep() === 1) return 'Informations principales';
+    if (this.currentStep() === 2) return 'Coordonnees de la collectivite';
+    return 'Compte administrateur local';
+  }
+
+  isLastStep(): boolean {
+    return this.currentStep() === this.totalSteps();
+  }
+
+  canAccessStep(step: number): boolean {
+    if (step <= 1) return true;
+    if (step === 2) return this.isStepValid(1);
+    return this.isStepValid(1) && this.isStepValid(2);
+  }
+
+  goToStep(step: number) {
+    if (step <= this.totalSteps() && this.canAccessStep(step)) {
+      this.currentStep.set(step);
+    }
+  }
+
+  nextStep() {
+    if (!this.isLastStep() && this.isCurrentStepValid()) {
+      this.currentStep.update(step => step + 1);
+    }
+  }
+
+  previousStep() {
+    if (this.currentStep() > 1) {
+      this.currentStep.update(step => step - 1);
+    }
+  }
+
+  isCurrentStepValid(): boolean {
+    return this.isStepValid(this.currentStep());
+  }
+
+  isStepValid(step: number): boolean {
+    if (step === 1) {
+      return !!(this.form.code && this.form.nom && this.form.type);
+    }
+    if (step === 2) {
+      return true;
+    }
+    return !!(
+      this.form.admin_prenom &&
+      this.form.admin_nom &&
+      this.form.admin_telephone &&
+      this.form.admin_email &&
+      this.form.admin_password
+    );
+  }
+
+  primaryActionLabel(): string {
+    if (this.saving()) return 'Traitement...';
+    return this.editingOrgId ? 'Enregistrer les modifications' : 'Creer l organisation';
   }
 
   isFormValid(): boolean {

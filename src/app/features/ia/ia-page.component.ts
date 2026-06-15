@@ -15,7 +15,7 @@ import { AuthService } from '../../core/services/auth.service';
       <div class="ia-header">
         <div class="header-content">
           <div class="ai-badge">IA Expérimentale</div>
-          <h1>Analyse Intelligente TerreAdmin</h1>
+          <h1>Analyse Intelligente SunuDëkk</h1>
           <p class="subtitle" *ngIf="!isSuperAdmin()">Utilisez la puissance de l'IA pour optimiser la gestion des dossiers et anticiper les besoins.</p>
           <p class="subtitle" *ngIf="isSuperAdmin()">Analyse stratégique globale de la performance des collectivités territoriales.</p>
         </div>

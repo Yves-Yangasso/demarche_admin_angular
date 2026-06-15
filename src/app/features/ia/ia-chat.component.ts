@@ -39,7 +39,7 @@ import { AuthService } from '../../core/services/auth.service';
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6v6l4 2"/></svg>
               </div>
               <div>
-                <h3>TerreAdmin GPT</h3>
+                <h3>SunuDëkk GPT</h3>
                 <span class="status">En ligne</span>
               </div>
             </div>
@@ -193,7 +193,7 @@ export class IaChatPageComponent {
 
   isTyping = signal(false);
   messages = signal<{role: 'user' | 'bot', text: string}[]>([
-    {role: 'bot', text: 'Bonjour ! Je suis l\'assistant intelligent de TerreAdmin. Je suis là pour vous aider dans vos rapports, vos recherches de dossiers et vos tâches quotidiennes. Comment puis-je vous assister ?'}
+    {role: 'bot', text: 'Bonjour ! Je suis l\'assistant intelligent de SunuDëkk. Je suis là pour vous aider dans vos rapports, vos recherches de dossiers et vos tâches quotidiennes. Comment puis-je vous assister ?'}
   ]);
   userInput = '';
 

@@ -434,7 +434,21 @@ export class DossierDetailComponent implements OnInit {
         this.reloadDossier();
         this.toastService.success('Dossier soumis avec succès');
       },
-      error: (err) => this.toastService.error(err?.error?.message || 'Erreur lors de la soumission.')
+      error: (err) => {
+        const msg = err?.error?.message || 'Erreur lors de la soumission.';
+        // Détection d'erreur connue côté backend indiquant qu'aucun circuit de validation n'est défini
+        if (msg.toLowerCase().includes('procéd') || msg.toLowerCase().includes('validation hiérarchique')) {
+          if (this.user()?.role === 'admin' || this.user()?.role === 'super_admin') {
+            const open = confirm(msg + '\n\nAucune procédure de validation n\'est configurée pour cette démarche. Voulez-vous ouvrir la configuration des circuits de validation maintenant ?');
+            if (open) this.router.navigate(['/workflows']);
+            else this.toastService.error(msg);
+          } else {
+            this.toastService.error(msg + ' Veuillez contacter un administrateur pour configurer le circuit de validation.');
+          }
+        } else {
+          this.toastService.error(msg);
+        }
+      }
     });
   }
 
