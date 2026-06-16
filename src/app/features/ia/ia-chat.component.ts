@@ -86,7 +86,7 @@ import { AuthService } from '../../core/services/auth.service';
     .chat-page-container { 
       display: grid; 
       grid-template-columns: 280px 1fr; 
-      height: calc(100vh - 120px); 
+      height: calc(100vh - 130px); 
       background: white; 
       border-radius: 16px; 
       border: 1px solid #e2e8f0; 
@@ -99,11 +99,12 @@ import { AuthService } from '../../core/services/auth.service';
       display: flex; 
       flex-direction: column; 
       padding: 1.5rem; 
+      min-height: 0;
     }
     .sidebar-header h2 { font-size: 1.25rem; margin: 0; color: #0f172a; }
     .sidebar-header p { font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; }
     
-    .history-list { flex: 1; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .history-list { flex: 1; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; }
     .history-item { 
       display: flex; 
       align-items: center; 
@@ -121,7 +122,7 @@ import { AuthService } from '../../core/services/auth.service';
     .history-item.empty:hover { background: none; }
 
     .new-chat-btn { 
-      margin-top: auto; 
+      margin-top: 1rem; 
       display: flex; 
       align-items: center; 
       justify-content: center; 
@@ -137,13 +138,14 @@ import { AuthService } from '../../core/services/auth.service';
     }
     .new-chat-btn:hover { background: #1d4ed8; }
 
-    .chat-main { display: flex; flex-direction: column; background: white; }
+    .chat-main { display: flex; flex-direction: column; background: white; min-height: 0; }
     .chat-header { 
       padding: 1rem 2rem; 
       border-bottom: 1px solid #f1f5f9; 
       display: flex; 
       align-items: center; 
       justify-content: space-between; 
+      flex-shrink: 0;
     }
     .bot-info { display: flex; align-items: center; gap: 1rem; }
     .bot-avatar { 
@@ -154,7 +156,7 @@ import { AuthService } from '../../core/services/auth.service';
     .status { font-size: 0.75rem; color: #10b981; display: flex; align-items: center; gap: 0.25rem; }
     .status::before { content: ''; width: 6px; height: 6px; background: #10b981; border-radius: 50%; }
 
-    .chat-messages { flex: 1; overflow-y: auto; padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; background: #ffffff; }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; background: #ffffff; min-height: 0; }
     .message-wrapper { display: flex; gap: 1rem; max-width: 80%; }
     .message-wrapper.user { align-self: flex-end; flex-direction: row-reverse; }
     .avatar { width: 32px; height: 32px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; flex-shrink: 0; }
@@ -170,7 +172,7 @@ import { AuthService } from '../../core/services/auth.service';
     .typing span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
 
-    .chat-input-area { padding: 1.5rem 2rem; border-top: 1px solid #f1f5f9; }
+    .chat-input-area { padding: 1.5rem 2rem; border-top: 1px solid #f1f5f9; flex-shrink: 0; }
     .input-container { 
       display: flex; gap: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; 
       border-radius: 12px; padding: 0.75rem; transition: border-color 0.2s;
