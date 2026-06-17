@@ -72,7 +72,9 @@ import { UtilisateurService } from '../../core/services/utilisateur.service';
             
             <div *ngIf="!profile()?.two_factor_enabled && !show2FASetup()">
                <p class="text-muted">Renforcez la sécurité de votre compte en activant le 2FA via une application (Google Authenticator, Authy, etc.).</p>
-               <button class="btn-primary" (click)="start2FASetup()">Activer le 2FA</button>
+               <button class="btn-primary" (click)="start2FASetup()" [disabled]="settingUp2FA()">
+                 {{ settingUp2FA() ? 'Chargement...' : 'Activer le 2FA' }}
+               </button>
             </div>
             
             <div *ngIf="show2FASetup()" class="setup-2fa">
@@ -85,8 +87,10 @@ import { UtilisateurService } from '../../core/services/utilisateur.service';
                  <input type="text" [(ngModel)]="confirm2FACode" placeholder="000000" maxlength="6" style="text-align: center; font-size: 1.25rem; letter-spacing: 0.25rem;">
                </div>
                <div class="form-actions" style="display: flex; gap: 0.5rem;">
-                 <button class="btn-primary" (click)="enable2FA()" [disabled]="confirm2FACode.length < 6">Confirmer et Activer</button>
-                 <button class="btn-secondary" (click)="show2FASetup.set(false)">Annuler</button>
+                 <button class="btn-primary" (click)="enable2FA()" [disabled]="confirm2FACode.length < 6 || settingUp2FA()">
+                   {{ settingUp2FA() ? 'Validation...' : 'Confirmer et Activer' }}
+                 </button>
+                 <button class="btn-secondary" (click)="show2FASetup.set(false)" [disabled]="settingUp2FA()">Annuler</button>
                </div>
             </div>
 
@@ -152,6 +156,7 @@ export class ParametresComponent implements OnInit {
 
   // 2FA
   show2FASetup = signal(false);
+  settingUp2FA = signal(false);
   qrCodeUrl = '';
   confirm2FACode = '';
 
@@ -198,21 +203,44 @@ export class ParametresComponent implements OnInit {
 
   // ── 2FA METHODS ──
   start2FASetup() {
-    this.authService.setup2FA().subscribe(res => {
-      this.qrCodeUrl = res.uri;
-      this.show2FASetup.set(true);
+    if (this.settingUp2FA()) return;
+    this.settingUp2FA.set(true);
+    this.authService.setup2FA().subscribe({
+      next: (res) => {
+        this.qrCodeUrl = res.uri;
+        this.show2FASetup.set(true);
+        this.settingUp2FA.set(false);
+      },
+      error: (err) => {
+        this.settingUp2FA.set(false);
+        if (err.status === 429) {
+          this.toastService.warning('Trop de tentatives. Veuillez attendre une minute avant de réessayer.', 'Limite atteinte');
+        } else {
+          this.toastService.error('Erreur lors de la configuration du 2FA');
+        }
+      }
     });
   }
 
   enable2FA() {
+    if (this.settingUp2FA()) return;
+    this.settingUp2FA.set(true);
     this.authService.enable2FA(this.confirm2FACode).subscribe({
       next: () => {
+        this.settingUp2FA.set(false);
         this.show2FASetup.set(false);
         this.profile.update(p => ({ ...p, two_factor_enabled: true }));
         this.authService.updateUser({ ...this.authService.user()!, two_factor_enabled: true });
         this.toastService.success('2FA activé !');
       },
-      error: () => this.toastService.error('Code invalide')
+      error: (err) => {
+        this.settingUp2FA.set(false);
+        if (err.status === 429) {
+          this.toastService.warning('Trop de tentatives de validation. Veuillez patienter.', 'Limite atteinte');
+        } else {
+          this.toastService.error('Code invalide ou erreur de serveur');
+        }
+      }
     });
   }
 
