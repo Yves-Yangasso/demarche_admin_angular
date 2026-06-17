@@ -12,20 +12,21 @@ RUN npm run build
 # Runtime stage
 FROM nginx:alpine
 
-RUN apk add --no-cache gettext
-
+# Defauts qui peuvent etre override depuis Dokploy (Environment).
 ENV API_UPSTREAM=https://sunudekk-api.djazael.com
 ENV API_HOST=sunudekk-api.djazael.com
 
+# nginx:alpine sait deja templatiser tout fichier dans /etc/nginx/templates/
+# (script natif /docker-entrypoint.d/20-envsubst-on-templates.sh). Pas besoin
+# d'entrypoint custom : on evite le piege CRLF des scripts edites sous Windows.
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
 
-COPY --from=build /app/dist/frontend /usr/share/nginx/html
+# Angular 17+ split l'output : dist/frontend/browser = SPA client, dist/frontend/server = SSR.
+# On ne sert QUE le client. Sans ce sous-chemin, le placeholder est copie et nginx
+# sert sa page "Welcome to nginx!" par defaut.
+COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
 
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -qO- http://127.0.0.1/ > /dev/null || exit 1
-
-ENTRYPOINT ["/docker-entrypoint.sh"]
