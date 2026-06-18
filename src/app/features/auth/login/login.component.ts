@@ -12,8 +12,7 @@ import { AuthService } from '../../../core/services/auth.service';
     <div class="login-container">
       <div class="login-card">
         <div class="brand">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="logo-svg"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          <h1>SunuDëkk</h1>
+          <img src="logo1.svg" alt="SunuDëkk" class="brand-logo">
         </div>
         <p class="subtitle">Espace d'administration</p>
 
@@ -98,7 +97,7 @@ import { AuthService } from '../../../core/services/auth.service';
       gap: 0.75rem;
       margin-bottom: 0.5rem;
     }
-    .logo-svg { color: #2563eb; }
+    .brand-logo { height: 56px; width: auto; max-width: 100%; display: block; }
     h1 { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0; }
     .subtitle { color: #64748b; font-size: 0.875rem; margin-bottom: 2.5rem; text-align: center; }
     

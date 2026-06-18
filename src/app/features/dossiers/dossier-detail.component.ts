@@ -7,6 +7,7 @@ import { LayoutComponent } from '../../shared/components/layout/layout.component
 import { DossierService } from '../../core/services/dossier.service';
 import { ToastService } from '../../core/services/toast.service';
 import { AuthService } from '../../core/services/auth.service';
+import { toApiUrl } from '../../core/utils/api-url';
 
 @Component({
   selector: 'app-dossier-detail',
@@ -247,7 +248,7 @@ import { AuthService } from '../../core/services/auth.service';
             </div>
             <div class="modal-body">
               <iframe *ngIf="selectedDoc().url.endsWith('.pdf')" [src]="getSafeUrl(selectedDoc().url)" width="100%" height="600px"></iframe>
-              <img *ngIf="isImage(selectedDoc().url)" [src]="selectedDoc().url" alt="Prévisualisation" style="max-width: 100%; max-height: 80vh;">
+              <img *ngIf="isImage(selectedDoc().url)" [src]="toApiUrl(selectedDoc().url)" alt="Prévisualisation" style="max-width: 100%; max-height: 80vh;">
               <div *ngIf="!selectedDoc().url.endsWith('.pdf') && !isImage(selectedDoc().url)" class="preview-unavailable">
                 Prévisualisation non disponible pour ce type de fichier.
                 <button class="btn btn-primary" (click)="telechargerDoc(selectedDoc())">Télécharger</button>
@@ -539,13 +540,19 @@ export class DossierDetailComponent implements OnInit {
 
   telechargerDoc(doc: any) {
     const link = document.createElement('a');
-    link.href = doc.url;
+    link.href = toApiUrl(doc.url);
     link.download = doc.nom;
     link.click();
   }
 
+  // Expose toApiUrl au template (Angular n'autorise pas l'appel direct des
+  // fonctions importees dans les bindings).
+  toApiUrl(url: string) {
+    return toApiUrl(url);
+  }
+
   getSafeUrl(url: string) {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    return this.sanitizer.bypassSecurityTrustResourceUrl(toApiUrl(url));
   }
 
   isImage(url: string) {

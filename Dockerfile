@@ -1,30 +1,29 @@
-# Build stage
+# --- Build SPA Angular ---
 FROM node:22-alpine AS build
-
 WORKDIR /app
+
+# Variables d'environnement consommees au BUILD via scripts/generate-env.mjs.
+# Override depuis Dokploy (compose build.args) ou en local
+# (docker build --build-arg API_BASE_URL=https://staging-api.exemple.com).
+ARG API_BASE_URL=https://sunudekk-api.djazael.com
+ENV API_BASE_URL=${API_BASE_URL}
 
 COPY package.json package-lock.json ./
 RUN npm ci --legacy-peer-deps
 
 COPY . .
-RUN npm run build
+RUN node scripts/generate-env.mjs && npm run build -- --configuration=production
 
-# Runtime stage
+# --- Serve static via nginx ---
 FROM nginx:alpine
 
-# Defauts qui peuvent etre override depuis Dokploy (Environment).
-ENV API_UPSTREAM=https://sunudekk-api.djazael.com
-ENV API_HOST=sunudekk-api.djazael.com
+# Config nginx statique : pas de template, pas d'envsubst, pas d'entrypoint custom.
+# L'app appelle directement environment.prod.ts::apiBaseUrl en cross-origin (CORS backend).
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# nginx:alpine sait deja templatiser tout fichier dans /etc/nginx/templates/
-# (script natif /docker-entrypoint.d/20-envsubst-on-templates.sh). Pas besoin
-# d'entrypoint custom : on evite le piege CRLF des scripts edites sous Windows.
-COPY nginx.conf.template /etc/nginx/templates/default.conf.template
-
-# Angular 17+ split l'output : dist/frontend/browser = SPA client, dist/frontend/server = SSR.
-# On ne sert QUE le client. Sans ce sous-chemin, le placeholder est copie et nginx
-# sert sa page "Welcome to nginx!" par defaut.
-COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
+# Angular `application` builder sans outputMode genere directement dans
+# outputPath (pas de sous-dossier browser/).
+COPY --from=build /app/dist/frontend /usr/share/nginx/html
 
 EXPOSE 80
 

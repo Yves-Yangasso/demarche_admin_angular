@@ -15,8 +15,7 @@ import { ToastComponent } from '../toast/toast.component';
       <app-toast></app-toast>
       <aside class="sidebar">
         <div class="brand">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="logo-svg"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          <span class="brand-name">SunuDëkk</span>
+          <img src="logo2.svg" alt="SunuDëkk" class="brand-logo">
         </div>
         
         <nav class="nav-menu">
@@ -163,9 +162,11 @@ import { ToastComponent } from '../toast/toast.component';
     }
 
     .sidebar-collapsed .brand { justify-content: center; gap: 0; }
-    .sidebar-collapsed .brand-name { display: none; }
+    /* Le logo wordmark est illisible en mode collapsed (sidebar etroite) ;
+       on le masque plutot que de le compresser pour ne pas pixeliser le brand. */
+    .sidebar-collapsed .brand-logo { display: none; }
 
-    .logo-svg { color: #2563eb; flex-shrink: 0; }
+    .brand-logo { height: 36px; width: auto; max-width: 100%; display: block; flex-shrink: 1; min-width: 0; }
 
     .nav-menu { flex: 1; display: flex; flex-direction: column; gap: 0.25rem; }
 

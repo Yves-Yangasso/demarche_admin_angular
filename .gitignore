@@ -43,4 +43,13 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 
+# Secrets (filet de securite : pas utilises actuellement mais Angular CLI peut
+# en generer en dev, et Dokploy injecte les env vars cote runtime).
+.env
+.env.*
+!.env.example
+
+# TypeScript incremental compile
+*.tsbuildinfo
+
 DEPLOY.md

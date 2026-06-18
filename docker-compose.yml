@@ -3,10 +3,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # Propage la var d'env Dokploy au build. Si non definie, le defaut
+        # du Dockerfile (ARG API_BASE_URL=...) prend le relais.
+        API_BASE_URL: ${API_BASE_URL:-}
     restart: unless-stopped
-    environment:
-      API_UPSTREAM: https://sunudekk-api.djazael.com
-      API_HOST: sunudekk-api.djazael.com
     ports:
       - "8080:80"
     healthcheck:
