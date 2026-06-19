@@ -155,21 +155,22 @@ import { AuthService } from '../../core/services/auth.service';
     .subtitle { color: #64748b; font-size: 0.9rem; margin-top: 0.25rem; }
     
     .btn { padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.5rem; }
-    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary { background: var(--primary-color); color: white; }
     .btn-secondary { background: #f1f5f9; color: #475569; }
 
     .card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
     .table { width: 100%; border-collapse: collapse; text-align: left; }
     th { text-align: left; padding: 1rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 0.875rem; color: #64748b; font-weight: 600; }
     td { padding: 1rem; border-bottom: 1px solid #f1f5f9; font-size: 0.875rem; color: #334155; }
-    
+
     .org-name { font-size: 0.75rem; font-weight: 600; color: #6366f1; background: #f5f3ff; padding: 2px 6px; border-radius: 4px; }
-    .role-badge { padding: 0.25rem 0.5rem; border-radius: 4px; background: #eff6ff; color: #2563eb; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+    .role-badge { padding: 0.25rem 0.5rem; border-radius: 4px; background: var(--primary-light); color: var(--primary-color); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
     .status-badge { padding: 0.25rem 0.5rem; border-radius: 4px; background: #f1f5f9; color: #64748b; font-size: 0.75rem; font-weight: 600; }
     .status-badge.active { background: #e6f4ea; color: #34a853; }
 
     .actions { text-align: right; }
-    .action-btn { background: none; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.375rem 0.75rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; color: #2563eb; }
+    .action-btn { background: none; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.375rem 0.75rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; color: var(--primary-color); }
+
     .action-btn.deactivate { color: #ef4444; }
 
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 2rem; }
@@ -185,11 +186,11 @@ import { AuthService } from '../../core/services/auth.service';
     .step-item:disabled { opacity: 0.55; cursor: not-allowed; }
     .step-item span { width: 30px; height: 30px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: #e2e8f0; color: #475569; font-weight: 800; flex: 0 0 auto; }
     .step-item strong { display: block; color: #334155; font-size: 0.82rem; }
-    .step-item small { display: block; margin-top: 0.125rem; font-size: 0.7rem; line-height: 1.2; }
-    .step-item.active { background: #eff6ff; border-color: #93c5fd; box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12); }
-    .step-item.active span, .step-item.done span { background: #2563eb; color: white; }
+    .step-item Small { display: block; margin-top: 0.125rem; font-size: 0.7rem; line-height: 1.2; }
+    .step-item.active { background: var(--primary-light); border-color: var(--primary-color); box-shadow: 0 8px 18px rgba(16, 185, 129, 0.12); }
+    .step-item.active span, .step-item.done span { background: var(--primary-color); color: white; }
     .step-heading { margin-bottom: 1rem; }
-    .step-heading span { color: #2563eb; font-size: 0.76rem; font-weight: 700; text-transform: uppercase; }
+    .step-heading span { color: var(--primary-color); font-size: 0.76rem; font-weight: 700; text-transform: uppercase; }
     .step-heading h4 { margin: 0.25rem 0 0; font-size: 1.05rem; color: #0f172a; }
 
     .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }

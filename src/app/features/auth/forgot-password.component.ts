@@ -47,16 +47,16 @@ import { AuthService } from '../../core/services/auth.service';
   styles: [`
     .auth-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f8fafc; }
     .auth-card { background: white; padding: 2.5rem; border-radius: 12px; border: 1px solid #e2e8f0; width: 100%; max-width: 400px; text-align: center; }
-    h1 { color: #2563eb; font-size: 1.5rem; margin-bottom: 2rem; }
+    h1 { color: var(--primary-color); font-size: 1.5rem; margin-bottom: 2rem; }
     h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
     .subtitle { color: #64748b; font-size: 0.875rem; margin-bottom: 2rem; }
     .form-group { text-align: left; margin-bottom: 1.5rem; }
     label { display: block; font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.5rem; }
     .form-control { width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; }
-    .btn-primary { width: 100%; padding: 0.75rem; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-primary { width: 100%; padding: 0.75rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
     .btn-secondary { display: block; width: 100%; padding: 0.75rem; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 1rem; }
     .auth-footer { margin-top: 2rem; border-top: 1px solid #f1f5f9; padding-top: 1.5rem; }
-    .auth-footer a { font-size: 0.875rem; color: #2563eb; text-decoration: none; }
+    .auth-footer a { font-size: 0.875rem; color: var(--primary-color); text-decoration: none; }
     .success-icon { width: 60px; height: 60px; background: #f0fdf4; color: #16a34a; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 1.5rem; }
   `]
 })

@@ -273,10 +273,10 @@ import { LayoutComponent } from '../../shared/components/layout/layout.component
     .step-item span { width: 32px; height: 32px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: #e2e8f0; color: #475569; font-weight: 800; flex: 0 0 auto; }
     .step-item strong { display: block; color: #334155; font-size: 0.875rem; }
     .step-item small { display: block; margin-top: 0.125rem; font-size: 0.72rem; line-height: 1.2; }
-    .step-item.active { background: #eff6ff; border-color: #93c5fd; box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12); }
-    .step-item.active span, .step-item.done span { background: #2563eb; color: white; }
+    .step-item.active { background: var(--primary-light); border-color: var(--primary-light); box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12); }
+    .step-item.active span, .step-item.done span { background: var(--primary-color); color: white; }
     .step-heading { margin-bottom: 1rem; }
-    .step-heading span { color: #2563eb; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; }
+    .step-heading span { color: var(--primary-color); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; }
     .step-heading h4 { margin: 0.25rem 0 0; font-size: 1.15rem; color: #0f172a; }
 
     .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }

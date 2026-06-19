@@ -81,7 +81,7 @@ import { of } from 'rxjs';
       font-size: 1rem;
       outline: none;
     }
-    .form-control:focus { border-color: #2563eb; ring: 2px solid #bfdbfe; }
+    .form-control:focus { border-color: var(--primary-color); ring: 2px solid var(--primary-light); }
 
     .file-upload { margin-top: 0.5rem; }
     .file-label {
@@ -96,12 +96,12 @@ import { of } from 'rxjs';
       font-size: 0.875rem;
       transition: all 0.2s;
     }
-    .file-label:hover { border-color: #2563eb; background: #eff6ff; color: #2563eb; }
+    .file-label:hover { border-color: var(--primary-color); background: var(--primary-light); color: var(--primary-color); }
     .help-text { color: #94a3b8; font-size: 0.75rem; margin-top: 0.5rem; display: block; }
 
     .actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
     .btn { padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; }
-    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary { background: var(--primary-color); color: white; }
     .btn-secondary { background: #f1f5f9; color: #475569; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   `]

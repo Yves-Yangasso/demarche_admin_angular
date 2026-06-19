@@ -41,11 +41,11 @@ import { AuthService } from '../../../core/services/auth.service';
   `,
   styles: [`
     .chat-wrapper { position: fixed; bottom: 2rem; right: 2rem; z-index: 1000; }
-    .chat-toggle { width: 56px; height: 56px; border-radius: 50%; background: #2563eb; color: white; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+    .chat-toggle { width: 56px; height: 56px; border-radius: 50%; background: var(--primary-color); color: white; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
     .chat-toggle:hover { transform: scale(1.05); }
 
     .chat-window { position: absolute; bottom: 4.5rem; right: 0; width: 350px; height: 500px; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
-    .chat-header { padding: 1rem; background: #2563eb; color: white; border-radius: 12px 12px 0 0; }
+    .chat-header { padding: 1rem; background: var(--primary-color); color: white; border-radius: 12px 12px 0 0; }
     .chat-header h3 { margin: 0; font-size: 1rem; }
     .chat-header p { margin: 0.25rem 0 0; font-size: 0.75rem; opacity: 0.8; }
 
@@ -54,12 +54,12 @@ import { AuthService } from '../../../core/services/auth.service';
     .message.user { align-self: flex-end; }
     .message.bot { align-self: flex-start; }
     .msg-bubble { padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.875rem; line-height: 1.4; }
-    .user .msg-bubble { background: #2563eb; color: white; border-bottom-right-radius: 2px; }
+    .user .msg-bubble { background: var(--primary-color); color: white; border-bottom-right-radius: 2px; }
     .bot .msg-bubble { background: white; color: #1e293b; border: 1px solid #e2e8f0; border-bottom-left-radius: 2px; }
 
     .chat-input { padding: 1rem; display: flex; gap: 0.5rem; border-top: 1px solid #e2e8f0; background: white; border-radius: 0 0 12px 12px; }
     .chat-input input { flex: 1; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.5rem 0.75rem; outline: none; }
-    .chat-input button { background: none; border: none; color: #2563eb; cursor: pointer; }
+    .chat-input button { background: none; border: none; color: var(--primary-color); cursor: pointer; }
     .chat-input button:disabled { opacity: 0.3; }
   `]
 })

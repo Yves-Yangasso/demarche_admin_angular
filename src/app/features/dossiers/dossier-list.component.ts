@@ -307,19 +307,19 @@ import { AuthService } from '../../core/services/auth.service';
     th { background: #f8fafc; padding: 0.875rem 1.25rem; font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; }
     td { padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.875rem; }
     
-    .ref { font-family: monospace; font-weight: 600; color: #2563eb; }
+    .ref { font-family: monospace; font-weight: 600; color: var(--primary-color); }
 
     .status-pill { 
       padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.025em;
     }
-    .status-pill.nouveau { background: #eff6ff; color: #2563eb; }
+    .status-pill.nouveau { background: var(--primary-light); color: var(--primary-color); }
     .status-pill.en_cours { background: #fefce8; color: #ca8a04; }
     .status-pill.cloture { background: #f0fdf4; color: #16a34a; }
     .status-pill.rejete { background: #fef2f2; color: #dc2626; }
 
     .actions { text-align: right; }
     .btn-icon { background: none; border: none; cursor: pointer; color: #94a3b8; padding: 4px; border-radius: 4px; transition: all 0.15s; margin-left: 0.25rem; }
-    .btn-icon:hover { background: #f1f5f9; color: #2563eb; }
+    .btn-icon:hover { background: #f1f5f9; color: var(--primary-color); }
 
     .empty-state { padding: 4rem; text-align: center; color: #64748b; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
 

@@ -374,8 +374,8 @@ import { toApiUrl } from '../../core/utils/api-url';
     .step-item.completed .step-icon { background: #e6f4ea; border-color: #34a853; color: #34a853; }
     .step-item.completed .step-title { color: #1b5e20; }
     
-    .step-item.active .step-icon { background: #eff6ff; border-color: #2563eb; color: #2563eb; box-shadow: 0 0 0 4px white, 0 0 0 6px rgba(37, 99, 235, 0.15); }
-    .step-item.active .step-title { color: #2563eb; font-weight: 700; }
+    .step-item.active .step-icon { background: var(--primary-light); border-color: var(--primary-color); color: var(--primary-color); box-shadow: 0 0 0 4px white, 0 0 0 6px rgba(37, 99, 235, 0.15); }
+    .step-item.active .step-title { color: var(--primary-color); font-weight: 700; }
 
     .step-item.warning .step-icon { background: #fffbeb; border-color: #d97706; color: #d97706; box-shadow: 0 0 0 4px white, 0 0 0 6px rgba(217, 119, 6, 0.15); }
     .step-item.warning .step-title { color: #b45309; font-weight: 700; }

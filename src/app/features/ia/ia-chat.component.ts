@@ -117,7 +117,7 @@ import { AuthService } from '../../core/services/auth.service';
       transition: background 0.2s;
     }
     .history-item:hover { background: #f1f5f9; }
-    .history-item.active { background: #eff6ff; color: #2563eb; font-weight: 500; }
+    .history-item.active { background: var(--primary-light); color: var(--primary-color); font-weight: 500; }
     .history-item.empty { cursor: default; padding: 1rem; text-align: center; color: #94a3b8; }
     .history-item.empty:hover { background: none; }
 
@@ -128,7 +128,7 @@ import { AuthService } from '../../core/services/auth.service';
       justify-content: center; 
       gap: 0.5rem; 
       padding: 0.75rem; 
-      background: #2563eb; 
+      background: var(--primary-color); 
       color: white; 
       border: none; 
       border-radius: 8px; 
@@ -136,7 +136,7 @@ import { AuthService } from '../../core/services/auth.service';
       cursor: pointer; 
       transition: background 0.2s;
     }
-    .new-chat-btn:hover { background: #1d4ed8; }
+    .new-chat-btn:hover { background: var(--primary-hover); }
 
     .chat-main { display: flex; flex-direction: column; background: white; min-height: 0; }
     .chat-header { 
@@ -165,7 +165,7 @@ import { AuthService } from '../../core/services/auth.service';
       padding: 1rem 1.25rem; border-radius: 12px; font-size: 0.9375rem; line-height: 1.5; color: #334155; 
       background: #f8fafc; border: 1px solid #f1f5f9;
     }
-    .user .msg-bubble { background: #2563eb; color: white; border: none; }
+    .user .msg-bubble { background: var(--primary-color); color: white; border: none; }
 
     .typing span { animation: blink 1.4s infinite both; }
     .typing span:nth-child(2) { animation-delay: 0.2s; }
@@ -177,14 +177,14 @@ import { AuthService } from '../../core/services/auth.service';
       display: flex; gap: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; 
       border-radius: 12px; padding: 0.75rem; transition: border-color 0.2s;
     }
-    .input-container:focus-within { border-color: #2563eb; background: white; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+    .input-container:focus-within { border-color: var(--primary-color); background: white; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
     textarea { flex: 1; background: none; border: none; outline: none; padding: 0.5rem; font-size: 0.9375rem; resize: none; font-family: inherit; }
     .send-btn { 
-      width: 40px; height: 40px; border-radius: 8px; background: #2563eb; color: white; 
+      width: 40px; height: 40px; border-radius: 8px; background: var(--primary-color); color: white; 
       border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; 
       transition: background 0.2s;
     }
-    .send-btn:hover { background: #1d4ed8; }
+    .send-btn:hover { background: var(--primary-hover); }
     .send-btn:disabled { opacity: 0.5; background: #94a3b8; }
     .disclaimer { text-align: center; font-size: 0.75rem; color: #94a3b8; margin-top: 0.75rem; }
   `]

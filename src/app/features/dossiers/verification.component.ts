@@ -83,15 +83,15 @@ import { DossierService } from '../../core/services/dossier.service';
     
     .search-tabs { display: flex; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
     .search-tabs button { flex: 1; padding: 1.25rem; border: none; background: none; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent; }
-    .search-tabs button.active { color: #2563eb; border-bottom-color: #2563eb; background: white; }
+    .search-tabs button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); background: white; }
 
     .tab-content { padding: 2.5rem; }
     .input-group { display: flex; gap: 1rem; }
     .input-group input { flex: 1; padding: 1rem 1.25rem; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1.125rem; outline: none; transition: border-color 0.2s; }
-    .input-group input:focus { border-color: #2563eb; }
+    .input-group input:focus { border-color: var(--primary-color); }
     
     .btn { padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; }
-    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary { background: var(--primary-color); color: white; }
     .btn-secondary { background: #f1f5f9; color: #475569; }
 
     .qr-tab { text-align: center; }
