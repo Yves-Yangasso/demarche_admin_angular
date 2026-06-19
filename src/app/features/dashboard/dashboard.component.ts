@@ -1,4 +1,13 @@
-import { Component, inject, OnInit, signal, ViewChild, ElementRef, AfterViewInit, effect } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  signal,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  effect,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
@@ -26,43 +35,81 @@ Chart.register(...registerables);
         </div>
         <div class="header-actions" *ngIf="!isSuperAdmin()">
           <div class="date-filter">
-            <input type="date" (change)="onDateChange($event, 'debut')">
+            <input type="date" (change)="onDateChange($event, 'debut')" />
             <span>au</span>
-            <input type="date" (change)="onDateChange($event, 'fin')">
+            <input type="date" (change)="onDateChange($event, 'fin')" />
           </div>
           <select (change)="changeChartType($event)">
             <option value="bar">Barres</option>
             <option value="line">Lignes</option>
           </select>
-          
         </div>
       </div>
 
       <!-- VUE SUPER ADMIN -->
       <div class="super-admin-content" *ngIf="isSuperAdmin()">
-        
-        <!-- GRAPHES NATIONAUX -->
-        <div class="dashboard-grid" *ngIf="globalStats()">
-          <section class="card chart-section">
-            <div class="card-header">
-              <h3>Volume par Organisation</h3>
+        <div class="kpi-grid" *ngIf="globalKpis() as kpi">
+          <div class="kpi-card">
+            <div class="kpi-bar c-blue"></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Organisations actives</span>
+              <span class="kpi-value"
+                >{{ kpi.orgsActives }}<span class="kpi-unit">/{{ kpi.orgsTotal }}</span></span
+              >
             </div>
-            <div class="chart-container">
-              <canvas #orgVolumeChart></canvas>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-bar c-purple"></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Dossiers traités (total)</span>
+              <span class="kpi-value">{{ kpi.totalDossiers }}</span>
             </div>
-          </section>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-bar c-green"></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Taux de complétion moyen</span>
+              <span class="kpi-value">{{ kpi.tauxMoyen }}<span class="kpi-unit">%</span></span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-bar c-red"></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Dossiers en retard</span>
+              <span class="kpi-value">{{ kpi.totalRetard }}</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-bar c-teal"></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Dossiers clos</span>
+              <span class="kpi-value">{{ kpi.totalClos }}</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-bar c-amber"></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Meilleure organisation</span>
+              <span class="kpi-value kpi-value-text">{{ kpi.meilleureOrg }}</span>
+            </div>
+          </div>
+        </div>
 
+        <div class="dashboard-grid dashboard-grid-3" *ngIf="globalStats()">
           <section class="card chart-section">
-            <div class="card-header">
-              <h3>Tendance Nationale (7j)</h3>
-            </div>
-            <div class="chart-container">
-              <canvas #nationalTrendChart></canvas>
-            </div>
+            <div class="card-header"><h3>Volume par organisation</h3></div>
+            <div class="chart-container"><canvas #orgVolumeChart></canvas></div>
+          </section>
+          <section class="card chart-section">
+            <div class="card-header"><h3>Tendance nationale (7j)</h3></div>
+            <div class="chart-container"><canvas #nationalTrendChart></canvas></div>
+          </section>
+          <section class="card chart-section">
+            <div class="card-header"><h3>Statuts des organisations</h3></div>
+            <div class="chart-container"><canvas #orgStatusChart></canvas></div>
           </section>
         </div>
 
-        <!-- TABLEAU DE PERFORMANCE -->
         <section class="card org-perf-section" *ngIf="globalStats(); else loading">
           <div class="card-header">
             <h3>Réseau SunuDëkk</h3>
@@ -96,9 +143,9 @@ Chart.register(...registerables);
                     </div>
                   </td>
                   <td>
-                    <span class="status-pill" [class.active]="org.actif">
-                      {{ org.actif ? 'Actif' : 'Bloqué' }}
-                    </span>
+                    <span class="status-pill" [class.active]="org.actif">{{
+                      org.actif ? 'Actif' : 'Bloqué'
+                    }}</span>
                   </td>
                 </tr>
               </tbody>
@@ -109,80 +156,199 @@ Chart.register(...registerables);
 
       <!-- VUE ADMIN / AGENT / CITOYEN -->
       <ng-container *ngIf="!isSuperAdmin()">
-        <div class="stats-grid" *ngIf="stats(); else loading">
-          <div class="stat-card clickable" (click)="openDossiersByStatus('nouveau')" title="Voir les dossiers nouveaux">
-            <div class="stat-icon grey">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            </div>
-            <div class="stat-info">
-              <span class="label">Nouveaux</span>
-              <span class="value">{{ stats().par_statut.nouveau || 0 }}</span>
+        <div class="kpi-grid" *ngIf="kpis() as kpi">
+          <div class="kpi-card">
+            <div class="kpi-bar c-blue"></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Total dossiers</span>
+              <span class="kpi-value">{{ kpi.total }}</span>
             </div>
           </div>
-          <div class="stat-card clickable" (click)="openDossiersByStatus('en_cours')" title="Voir les dossiers en cours">
-            <div class="stat-icon blue">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg>
-            </div>
-            <div class="stat-info">
-              <span class="label">En cours</span>
-              <span class="value">{{ stats().par_statut.en_cours || 0 }}</span>
+          <div class="kpi-card">
+            <div class="kpi-bar c-green"></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Taux de clôture</span>
+              <span class="kpi-value">{{ kpi.tauxCloture }}<span class="kpi-unit">%</span></span>
             </div>
           </div>
-          <div class="stat-card clickable" (click)="openDossiersByStatus('doc_requis')" title="Voir les dossiers nécessitant des documents">
-            <div class="stat-icon purple">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-            </div>
-            <div class="stat-info">
-              <span class="label">Documents requis</span>
-              <span class="value">{{ stats().par_statut.doc_requis || 0 }}</span>
-            </div>
-          </div>
-          <div class="stat-card clickable" (click)="openDossiersByStatus('en_validation')" title="Voir les dossiers en validation">
-            <div class="stat-icon yellow">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            </div>
-            <div class="stat-info">
-              <span class="label">En validation</span>
-              <span class="value">{{ stats().par_statut.en_validation || 0 }}</span>
-            </div>
-          </div>
-          <div class="stat-card clickable" (click)="openDossiersByStatus('rejete')" title="Voir les dossiers rejetés">
-            <div class="stat-icon red">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-            </div>
-            <div class="stat-info">
-              <span class="label">Rejetés</span>
-              <span class="value">{{ stats().par_statut.rejete || 0 }}</span>
-            </div>
-          </div>
-          <div class="stat-card clickable" (click)="openDossiersByStatus('cloture')" title="Voir les dossiers clôturés">
-            <div class="stat-icon green">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            </div>
-            <div class="stat-info">
-              <span class="label">Clôturés</span>
-              <span class="value">{{ stats().par_statut.cloture || 0 }}</span>
+          <div class="kpi-card">
+            <div class="kpi-bar c-red"></div>
+            <div class="kpi-body">
+              <span class="kpi-label">Taux de rejet</span>
+              <span class="kpi-value">{{ kpi.tauxRejet }}<span class="kpi-unit">%</span></span>
             </div>
           </div>
         </div>
 
+        <div class="stats-grid" *ngIf="stats(); else loading">
+          <div
+            class="stat-card clickable"
+            (click)="openDossiersByStatus('nouveau')"
+            title="Voir les dossiers nouveaux"
+          >
+            <div class="stat-icon grey">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="label">Nouveaux</span
+              ><span class="value">{{ stats().par_statut.nouveau || 0 }}</span>
+            </div>
+          </div>
+          <div
+            class="stat-card clickable"
+            (click)="openDossiersByStatus('en_cours')"
+            title="Voir les dossiers en cours"
+          >
+            <div class="stat-icon blue">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"
+                ></path>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="label">En cours</span
+              ><span class="value">{{ stats().par_statut.en_cours || 0 }}</span>
+            </div>
+          </div>
+          <div
+            class="stat-card clickable"
+            (click)="openDossiersByStatus('doc_requis')"
+            title="Voir les dossiers nécessitant des documents"
+          >
+            <div class="stat-icon purple">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <line x1="9" y1="15" x2="15" y2="15"></line>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="label">Documents requis</span
+              ><span class="value">{{ stats().par_statut.doc_requis || 0 }}</span>
+            </div>
+          </div>
+          <div
+            class="stat-card clickable"
+            (click)="openDossiersByStatus('en_validation')"
+            title="Voir les dossiers en validation"
+          >
+            <div class="stat-icon yellow">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="label">En validation</span
+              ><span class="value">{{ stats().par_statut.en_validation || 0 }}</span>
+            </div>
+          </div>
+          <div
+            class="stat-card clickable"
+            (click)="openDossiersByStatus('rejete')"
+            title="Voir les dossiers rejetés"
+          >
+            <div class="stat-icon red">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="label">Rejetés</span
+              ><span class="value">{{ stats().par_statut.rejete || 0 }}</span>
+            </div>
+          </div>
+          <div
+            class="stat-card clickable"
+            (click)="openDossiersByStatus('cloture')"
+            title="Voir les dossiers clôturés"
+          >
+            <div class="stat-icon green">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="label">Clôturés</span
+              ><span class="value">{{ stats().par_statut.cloture || 0 }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid dashboard-grid-3">
+          <section class="card chart-section">
+            <div class="card-header"><h3>Évolution du volume de dossiers</h3></div>
+            <div class="chart-container"><canvas #volumeChart></canvas></div>
+          </section>
+          <section class="card chart-section">
+            <div class="card-header"><h3>Répartition par catégorie</h3></div>
+            <div class="chart-container"><canvas #categoryChart></canvas></div>
+          </section>
+          <section class="card chart-section">
+            <div class="card-header"><h3>Répartition par statut</h3></div>
+            <div class="chart-container"><canvas #statusChart></canvas></div>
+          </section>
+        </div>
+
+        <!-- NOUVEAU : taux de rejet/traités + performance par agent -->
         <div class="dashboard-grid">
           <section class="card chart-section">
-            <div class="card-header">
-              <h3>Évolution du volume de dossiers</h3>
-            </div>
-            <div class="chart-container">
-              <canvas #volumeChart></canvas>
-            </div>
+            <div class="card-header"><h3>Taux de rejet / traités par période</h3></div>
+            <div class="chart-container"><canvas #rejetTrendChart></canvas></div>
           </section>
-
-          <section class="card chart-section">
-            <div class="card-header">
-              <h3>Répartition par catégorie</h3>
-            </div>
-            <div class="chart-container">
-              <canvas #categoryChart></canvas>
-            </div>
+          <section class="card chart-section" *ngIf="isAdmin()">
+            <div class="card-header"><h3>Performance par agent</h3></div>
+            <div class="chart-container"><canvas #agentPerfChart></canvas></div>
           </section>
         </div>
 
@@ -208,11 +374,25 @@ Chart.register(...registerables);
                   <td class="font-mono">{{ d.numero }}</td>
                   <td>{{ d.titre }}</td>
                   <td>{{ d.citoyen?.prenom }} {{ d.citoyen?.nom }}</td>
-                  <td>{{ d.date_soumission | date:'dd/MM/yyyy' }}</td>
-                  <td><span class="status-badge" [ngClass]="d.statut">{{ displayStatus(d.statut) }}</span></td>
+                  <td>{{ d.date_soumission | date: 'dd/MM/yyyy' }}</td>
+                  <td>
+                    <span class="status-badge" [ngClass]="d.statut">{{
+                      displayStatus(d.statut)
+                    }}</span>
+                  </td>
                   <td>
                     <button class="btn-icon" (click)="goToDossier(d.id)">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
                     </button>
                   </td>
                 </tr>
@@ -224,80 +404,412 @@ Chart.register(...registerables);
 
       <ng-template #loading>
         <div class="loading-state">
-          <svg class="spinner" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
+          <svg
+            class="spinner"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="12" y1="2" x2="12" y2="6"></line>
+            <line x1="12" y1="18" x2="12" y2="22"></line>
+            <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+            <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+            <line x1="2" y1="12" x2="6" y2="12"></line>
+            <line x1="18" y1="12" x2="22" y2="12"></line>
+            <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+            <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+          </svg>
           <p>Chargement des données...</p>
         </div>
       </ng-template>
     </app-layout>
   `,
-  styles: [`
-    .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-    .header-actions { display: flex; gap: 1rem; align-items: center; }
-    .date-filter { display: flex; align-items: center; gap: 0.5rem; background: white; padding: 0.5rem; border-radius: 8px; border: 1px solid #e2e8f0; }
-    .date-filter input { border: none; font-size: 0.875rem; outline: none; }
-    
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
-    .stat-card { background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 1rem; }
-    .stat-card.clickable { cursor: pointer; transition: transform 0.12s ease, box-shadow 0.12s ease; }
-    .stat-card.clickable:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(13, 42, 148, 0.08); }
-    .stat-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-    .stat-icon.blue { background: #eff6ff; color: #2563eb; }
-    .stat-icon.red { background: #fef2f2; color: #dc2626; }
-    .stat-icon.grey { background: #f1f5f9; color: #64748b; }
-    .stat-icon.purple { background: #f5f3ff; color: #7c3aed; }
-    .stat-icon.yellow { background: #fffbeb; color: #d97706; }
-    .stat-icon.green { background: #f0fdf4; color: #16a34a; }
-    .label { font-size: 0.875rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
-    .value { font-size: 1.75rem; font-weight: 800; color: #0f172a; display: block; }
+  styles: [
+    `
+      .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+      .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+      .date-filter {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: white;
+        padding: 0.5rem;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+      }
+      .date-filter input {
+        border: none;
+        font-size: 0.875rem;
+        outline: none;
+      }
 
-    .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
-    .card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; }
-    .chart-container { height: 280px; position: relative; }
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+      }
+      .kpi-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        overflow: hidden;
+      }
+      .kpi-bar {
+        width: 5px;
+        flex-shrink: 0;
+      }
+      .kpi-bar.c-blue {
+        background: #2563eb;
+      }
+      .kpi-bar.c-purple {
+        background: #7c3aed;
+      }
+      .kpi-bar.c-green {
+        background: #16a34a;
+      }
+      .kpi-bar.c-red {
+        background: #dc2626;
+      }
+      .kpi-bar.c-teal {
+        background: #0d9488;
+      }
+      .kpi-bar.c-amber {
+        background: #d97706;
+      }
+      .kpi-body {
+        padding: 1.1rem 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+      .kpi-label {
+        font-size: 0.8rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+      }
+      .kpi-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1;
+      }
+      .kpi-value-text {
+        font-size: 1.25rem;
+      }
+      .kpi-unit {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #64748b;
+        margin-left: 2px;
+      }
 
-    .org-perf-section { padding: 0; }
-    .org-perf-section .card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
-    .org-code { font-size: 0.75rem; color: #64748b; font-family: monospace; }
-    .green-text { color: #16a34a; font-weight: 600; }
-    .red-text { color: #dc2626; font-weight: 600; }
-    
-    .progress-container { display: flex; align-items: center; gap: 0.75rem; width: 100%; max-width: 160px; }
-    .progress-bar { height: 8px; background: #3b82f6; border-radius: 4px; }
-    .progress-container span { font-size: 0.75rem; font-weight: 600; color: #64748b; min-width: 40px; }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+      }
+      .stat-card {
+        background: white;
+        padding: 1.25rem;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+      .stat-card.clickable {
+        cursor: pointer;
+        transition:
+          transform 0.12s ease,
+          box-shadow 0.12s ease;
+      }
+      .stat-card.clickable:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(13, 42, 148, 0.08);
+      }
+      .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .stat-icon.blue {
+        background: #eff6ff;
+        color: #2563eb;
+      }
+      .stat-icon.red {
+        background: #fef2f2;
+        color: #dc2626;
+      }
+      .stat-icon.grey {
+        background: #f1f5f9;
+        color: #64748b;
+      }
+      .stat-icon.purple {
+        background: #f5f3ff;
+        color: #7c3aed;
+      }
+      .stat-icon.yellow {
+        background: #fffbeb;
+        color: #d97706;
+      }
+      .stat-icon.green {
+        background: #f0fdf4;
+        color: #16a34a;
+      }
+      .label {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #0f172a;
+        display: block;
+      }
 
-    .status-pill { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; background: #f1f5f9; color: #64748b; }
-    .status-pill.active { background: #e6f4ea; color: #34a853; }
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+      .dashboard-grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+      }
+      .chart-container {
+        height: 240px;
+        position: relative;
+      }
 
-    .recent-dossiers-section { margin-top: 2rem; padding: 0; }
-    .btn-text { background: none; border: none; color: #2563eb; font-weight: 600; cursor: pointer; font-size: 0.875rem; }
+      @media (max-width: 1280px) {
+        .kpi-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .dashboard-grid-3 {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 768px) {
+        .kpi-grid {
+          grid-template-columns: 1fr;
+        }
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+        .dashboard-grid,
+        .dashboard-grid-3 {
+          grid-template-columns: 1fr;
+        }
+      }
 
-    .table-responsive { overflow-x: auto; }
-    .recent-table { width: 100%; border-collapse: collapse; }
-    .recent-table th { text-align: left; padding: 1rem 1.5rem; font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 600; background: #f8fafc; }
-    .recent-table td { padding: 1rem 1.5rem; border-bottom: 1px solid #f1f5f9; font-size: 0.875rem; color: #334155; }
-    .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-weight: 600; color: #0f172a; }
+      .org-perf-section {
+        padding: 0;
+      }
+      .org-perf-section .card-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .org-code {
+        font-size: 0.75rem;
+        color: #64748b;
+        font-family: monospace;
+      }
+      .green-text {
+        color: #16a34a;
+        font-weight: 600;
+      }
+      .red-text {
+        color: #dc2626;
+        font-weight: 600;
+      }
 
-    .status-badge { padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize; }
-    .status-badge.nouveau { background: var(--primary-light); color: var(--primary-color); }
-    .status-badge.en_cours { background: #fefce8; color: #ca8a04; }
-    .status-badge.cloture { background: #f0fdf4; color: #16a34a; }
-    .status-badge.rejete { background: #fef2f2; color: #dc2626; }
-    .status-badge.doc_requis { background: #f5f3ff; color: #7c3aed; }
-    .status-badge.en_validation { background: #fffbeb; color: #d97706; }
+      .progress-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        max-width: 160px;
+      }
+      .progress-bar {
+        height: 8px;
+        background: #3b82f6;
+        border-radius: 4px;
+      }
+      .progress-container span {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #64748b;
+        min-width: 40px;
+      }
 
-    .btn-icon { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 0.25rem; border-radius: 4px; }
-    .btn-icon:hover { color: #2563eb; background: #eff6ff; }
+      .status-pill {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: #f1f5f9;
+        color: #64748b;
+      }
+      .status-pill.active {
+        background: #e6f4ea;
+        color: #34a853;
+      }
 
-    .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem; color: #64748b; gap: 1rem; }
-    .spinner { animation: rotate 2s linear infinite; width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; }
-    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  `]
+      .recent-dossiers-section {
+        margin-top: 2rem;
+        padding: 0;
+      }
+      .btn-text {
+        background: none;
+        border: none;
+        color: #2563eb;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.875rem;
+      }
+
+      .table-responsive {
+        overflow-x: auto;
+      }
+      .recent-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .recent-table th {
+        text-align: left;
+        padding: 1rem 1.5rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #64748b;
+        font-weight: 600;
+        background: #f8fafc;
+      }
+      .recent-table td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.875rem;
+        color: #334155;
+      }
+      .font-mono {
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+          monospace;
+        font-weight: 600;
+        color: #0f172a;
+      }
+
+      .status-badge {
+        padding: 0.25rem 0.625rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: capitalize;
+      }
+      .status-badge.nouveau {
+        background: var(--primary-light);
+        color: var(--primary-color);
+      }
+      .status-badge.en_cours {
+        background: #fefce8;
+        color: #ca8a04;
+      }
+      .status-badge.cloture {
+        background: #f0fdf4;
+        color: #16a34a;
+      }
+      .status-badge.rejete {
+        background: #fef2f2;
+        color: #dc2626;
+      }
+      .status-badge.doc_requis {
+        background: #f5f3ff;
+        color: #7c3aed;
+      }
+      .status-badge.en_validation {
+        background: #fffbeb;
+        color: #d97706;
+      }
+
+      .btn-icon {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 4px;
+      }
+      .btn-icon:hover {
+        color: #2563eb;
+        background: #eff6ff;
+      }
+
+      .loading-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem;
+        color: #64748b;
+        gap: 1rem;
+      }
+      .spinner {
+        animation: rotate 2s linear infinite;
+        width: 32px;
+        height: 32px;
+        border: 3px solid #e2e8f0;
+        border-top-color: #2563eb;
+        border-radius: 50%;
+      }
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    `,
+  ],
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
-  // Prompts réservés à l'IA — NE PAS AFFICHER DANS L'UI
-  private readonly aiPromptAgent = "Suivi de mes dossiers et de mes performances.";
+  private readonly aiPromptAgent = 'Suivi de mes dossiers et de mes performances.';
   private readonly aiPromptDefault = "Analyses et variations de l'activité administrative.";
 
-  // Exemple d'accès au prompt pour usage interne ou appel IA
   getAiPrompt(): string {
     return this.isAgent() ? this.aiPromptAgent : this.aiPromptDefault;
   }
@@ -305,20 +817,25 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   displayStatus(code?: string): string {
     if (!code) return '';
     const map: any = {
-      'nouveau': 'Nouveau',
-      'en_cours': 'En cours',
-      'doc_requis': 'Documents requis',
-      'en_validation': 'En validation',
-      'rejete': 'Rejeté',
-      'cloture': 'Clôturé'
+      nouveau: 'Nouveau',
+      en_cours: 'En cours',
+      doc_requis: 'Documents requis',
+      en_validation: 'En validation',
+      rejete: 'Rejeté',
+      cloture: 'Clôturé',
     };
     if (map[code]) return map[code];
     return code.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
   }
+
   @ViewChild('volumeChart') volumeCanvas!: ElementRef;
   @ViewChild('categoryChart') categoryCanvas!: ElementRef;
+  @ViewChild('statusChart') statusCanvas!: ElementRef;
   @ViewChild('orgVolumeChart') orgVolumeCanvas!: ElementRef;
   @ViewChild('nationalTrendChart') nationalTrendCanvas!: ElementRef;
+  @ViewChild('orgStatusChart') orgStatusCanvas!: ElementRef;
+  @ViewChild('rejetTrendChart') rejetTrendCanvas!: ElementRef;
+  @ViewChild('agentPerfChart') agentPerfCanvas!: ElementRef;
 
   private statsService = inject(StatsService);
   private authService = inject(AuthService);
@@ -330,23 +847,31 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   recentDossiers = signal<any[]>([]);
   filters = signal<any>({});
   chartType = signal<string>('bar');
-  
+  rejetTrend = signal<any[]>([]);
+  agentPerformance = signal<any[]>([]);
+
   volumeChartInstance?: Chart;
   categoryChartInstance?: Chart;
+  statusChartInstance?: Chart;
   orgVolumeChartInstance?: Chart;
   nationalTrendChartInstance?: Chart;
+  orgStatusChartInstance?: Chart;
+  rejetTrendChartInstance?: Chart;
+  agentPerfChartInstance?: Chart;
 
   private dataLoaded = false;
 
   constructor() {
-    // Utiliser un effect pour réagir au chargement de l'utilisateur
-    effect(() => {
-      const user = this.authService.user();
-      if (user && !this.dataLoaded) {
-        this.dataLoaded = true;
-        this.initDashboardData();
-      }
-    }, { allowSignalWrites: true });
+    effect(
+      () => {
+        const user = this.authService.user();
+        if (user && !this.dataLoaded) {
+          this.dataLoaded = true;
+          this.initDashboardData();
+        }
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   isSuperAdmin() {
@@ -359,9 +884,12 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     return user?.role === 'agent';
   }
 
-  ngOnInit() {
-    // On laisse l'effect gérer le chargement initial pour éviter les race conditions
+  isAdmin() {
+    const user = this.authService.user();
+    return user?.role === 'admin';
   }
+
+  ngOnInit() {}
 
   initDashboardData() {
     if (this.isSuperAdmin()) {
@@ -369,13 +897,82 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     } else {
       this.loadStats();
       this.loadRecentDossiers();
+      this.loadRejetTrend();
+      if (this.isAdmin()) this.loadAgentPerformance();
     }
   }
 
+  kpis = signal<{ total: number; tauxCloture: number; tauxRejet: number } | null>(null);
+
+  globalKpis = signal<{
+    orgsActives: number;
+    orgsTotal: number;
+    totalDossiers: number;
+    tauxMoyen: number;
+    totalRetard: number;
+    totalClos: number;
+    meilleureOrg: string;
+  } | null>(null);
+
+  private computeKpis(data: any) {
+    const total = Object.values(data.par_statut || {}).reduce(
+      (a: number, b: any) => a + (b || 0),
+      0,
+    ) as number;
+    const clos = data.par_statut?.cloture || 0;
+    const rejetes = data.par_statut?.rejete || 0;
+    this.kpis.set({
+      total,
+      tauxCloture: total ? Math.round((clos / total) * 100) : 0,
+      tauxRejet: total ? Math.round((rejetes / total) * 100) : 0,
+    });
+  }
+
+  private computeGlobalKpis(data: any[]) {
+    const orgsTotal = data.length;
+    const orgsActives = data.filter((o) => o.actif).length;
+    const totalDossiers = data.reduce((s, o) => s + (o.stats.total_dossiers || 0), 0);
+    const totalClos = data.reduce((s, o) => s + (o.stats.dossiers_clos || 0), 0);
+    const totalRetard = data.reduce((s, o) => s + (o.stats.en_retard || 0), 0);
+    const tauxMoyen = orgsTotal
+      ? Math.round(data.reduce((s, o) => s + (o.stats.taux_completion || 0), 0) / orgsTotal)
+      : 0;
+    const meilleure = [...data].sort(
+      (a, b) => (b.stats.taux_completion || 0) - (a.stats.taux_completion || 0),
+    )[0];
+
+    this.globalKpis.set({
+      orgsActives,
+      orgsTotal,
+      totalDossiers,
+      tauxMoyen,
+      totalRetard,
+      totalClos,
+      meilleureOrg: meilleure ? meilleure.nom : '-',
+    });
+  }
+
   loadGlobalStats() {
-    this.statsService.getGlobalStats().subscribe(data => {
+    this.statsService.getGlobalStats().subscribe((data) => {
       this.globalStats.set(data);
+      this.computeGlobalKpis(data);
       setTimeout(() => this.initSuperAdminCharts(), 100);
+    });
+  }
+
+  // Backend attendu : [{ date, taux_rejet, taux_traite }]
+  loadRejetTrend() {
+    this.statsService.getRejectionTrend(this.filters()).subscribe((data) => {
+      this.rejetTrend.set(data);
+      this.initRejetTrendChart();
+    });
+  }
+
+  // Backend attendu : [{ agent, dossiers_traites, taux_reussite }]
+  loadAgentPerformance() {
+    this.statsService.getAgentPerformance(this.filters()).subscribe((data) => {
+      this.agentPerformance.set(data);
+      this.initAgentPerfChart();
     });
   }
 
@@ -384,7 +981,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   loadRecentDossiers() {
-    this.dossierService.getDossiers({ per_page: 5 }).subscribe(data => {
+    this.dossierService.getDossiers({ per_page: 5 }).subscribe((data) => {
       this.recentDossiers.set(data.dossiers);
     });
   }
@@ -397,21 +994,22 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.router.navigate(['/dossiers', id]);
   }
 
-  ngAfterViewInit() {
-    // Les graphes seront initialisés quand les données arrivent
-  }
+  ngAfterViewInit() {}
 
   loadStats() {
-    this.statsService.getDashboardStats(this.filters()).subscribe(data => {
+    this.statsService.getDashboardStats(this.filters()).subscribe((data) => {
       this.stats.set(data);
+      this.computeKpis(data);
       this.initCharts();
     });
   }
 
   onDateChange(event: any, type: 'debut' | 'fin') {
     const key = type === 'debut' ? 'date_debut' : 'date_fin';
-    this.filters.update(f => ({ ...f, [key]: event.target.value }));
+    this.filters.update((f) => ({ ...f, [key]: event.target.value }));
     this.loadStats();
+    this.loadRejetTrend();
+    if (this.isAdmin()) this.loadAgentPerformance();
   }
 
   changeChartType(event: any) {
@@ -419,64 +1017,91 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.initCharts();
   }
 
+  private readonly statusColors: Record<string, string> = {
+    nouveau: '#64748b',
+    en_cours: '#2563eb',
+    doc_requis: '#7c3aed',
+    en_validation: '#d97706',
+    rejete: '#dc2626',
+    cloture: '#16a34a',
+  };
+
   initSuperAdminCharts() {
     const data = this.globalStats();
     if (!data) return;
 
-    // 1. Chart Volume par Organisation
     if (this.orgVolumeChartInstance) this.orgVolumeChartInstance.destroy();
     if (this.orgVolumeCanvas) {
       this.orgVolumeChartInstance = new Chart(this.orgVolumeCanvas.nativeElement, {
         type: 'bar',
         data: {
-          labels: data.map(org => org.nom),
-          datasets: [{
-            label: 'Total Dossiers',
-            data: data.map(org => org.stats.total_dossiers),
-            backgroundColor: '#3b82f6',
-            borderRadius: 4
-          }]
+          labels: data.map((org) => org.nom),
+          datasets: [
+            {
+              label: 'Total Dossiers',
+              data: data.map((org) => org.stats.total_dossiers),
+              backgroundColor: '#3b82f6',
+              borderRadius: 4,
+            },
+          ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } }
-        }
+          plugins: { legend: { display: false } },
+        },
       });
     }
 
-    // 2. Chart Tendance Nationale (Aggrégation)
     if (this.nationalTrendChartInstance) this.nationalTrendChartInstance.destroy();
     if (this.nationalTrendCanvas) {
-      // Aggréger les volumes par date
       const nationalTrend: any = {};
-      data.forEach(org => {
+      data.forEach((org) => {
         org.stats.performance_7_jours.forEach((p: any) => {
           nationalTrend[p.date] = (nationalTrend[p.date] || 0) + p.count;
         });
       });
-
       const labels = Object.keys(nationalTrend).sort();
-      const values = labels.map(l => nationalTrend[l]);
+      const values = labels.map((l) => nationalTrend[l]);
 
       this.nationalTrendChartInstance = new Chart(this.nationalTrendCanvas.nativeElement, {
         type: 'line',
         data: {
           labels: labels,
-          datasets: [{
-            label: 'Volume National',
-            data: values,
-            borderColor: '#8b5cf6',
-            backgroundColor: 'rgba(139, 92, 246, 0.1)',
-            fill: true,
-            tension: 0.4
-          }]
+          datasets: [
+            {
+              label: 'Volume National',
+              data: values,
+              borderColor: '#8b5cf6',
+              backgroundColor: 'rgba(139, 92, 246, 0.1)',
+              fill: true,
+              tension: 0.4,
+            },
+          ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } }
-        }
+          plugins: { legend: { display: false } },
+        },
+      });
+    }
+
+    if (this.orgStatusChartInstance) this.orgStatusChartInstance.destroy();
+    if (this.orgStatusCanvas) {
+      const actives = data.filter((o) => o.actif).length;
+      const bloquees = data.length - actives;
+      this.orgStatusChartInstance = new Chart(this.orgStatusCanvas.nativeElement, {
+        type: 'doughnut',
+        data: {
+          labels: ['Actives', 'Bloquées'],
+          datasets: [{ data: [actives, bloquees], backgroundColor: ['#16a34a', '#dc2626'] }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } },
+        },
       });
     }
   }
@@ -485,41 +1110,134 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     const data = this.stats();
     if (!data || this.isSuperAdmin()) return;
 
-    // Volume Chart
     if (this.volumeChartInstance) this.volumeChartInstance.destroy();
     if (this.volumeCanvas) {
       this.volumeChartInstance = new Chart(this.volumeCanvas.nativeElement, {
         type: this.chartType() as any,
         data: {
           labels: data.volume_7_jours.map((d: any) => d.date),
-          datasets: [{
-            label: 'Dossiers soumis',
-            data: data.volume_7_jours.map((d: any) => d.count),
-            backgroundColor: '#3b82f6',
-            borderColor: '#2563eb',
-            borderWidth: 2,
-            tension: 0.3
-          }]
+          datasets: [
+            {
+              label: 'Dossiers soumis',
+              data: data.volume_7_jours.map((d: any) => d.count),
+              backgroundColor: '#3b82f6',
+              borderColor: '#2563eb',
+              borderWidth: 2,
+              tension: 0.3,
+            },
+          ],
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: { responsive: true, maintainAspectRatio: false },
       });
     }
 
-    // Category Chart
     if (this.categoryChartInstance) this.categoryChartInstance.destroy();
     if (this.categoryCanvas) {
       this.categoryChartInstance = new Chart(this.categoryCanvas.nativeElement, {
         type: 'pie',
         data: {
           labels: data.par_categorie.map((c: any) => c.categorie),
-          datasets: [{
-            data: data.par_categorie.map((c: any) => c.count),
-            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
-          }]
+          datasets: [
+            {
+              data: data.par_categorie.map((c: any) => c.count),
+              backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+            },
+          ],
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: { responsive: true, maintainAspectRatio: false },
       });
     }
+
+    if (this.statusChartInstance) this.statusChartInstance.destroy();
+    if (this.statusCanvas) {
+      const entries = Object.entries(data.par_statut || {});
+      this.statusChartInstance = new Chart(this.statusCanvas.nativeElement, {
+        type: 'doughnut',
+        data: {
+          labels: entries.map(([k]) => this.displayStatus(k)),
+          datasets: [
+            {
+              data: entries.map(([, v]) => v) as number[],
+              backgroundColor: entries.map(([k]) => this.statusColors[k] || '#94a3b8'),
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } },
+        },
+      });
+    }
+  }
+
+  initRejetTrendChart() {
+    const data = this.rejetTrend();
+    if (!data?.length || !this.rejetTrendCanvas) return;
+    if (this.rejetTrendChartInstance) this.rejetTrendChartInstance.destroy();
+
+    this.rejetTrendChartInstance = new Chart(this.rejetTrendCanvas.nativeElement, {
+      type: 'line',
+      data: {
+        labels: data.map((d) => d.date),
+        datasets: [
+          {
+            label: 'Taux de rejet (%)',
+            data: data.map((d) => d.taux_rejet),
+            borderColor: '#dc2626',
+            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+            tension: 0.3,
+            fill: true,
+          },
+          {
+            label: 'Taux de traitement (%)',
+            data: data.map((d) => d.taux_traite),
+            borderColor: '#16a34a',
+            backgroundColor: 'rgba(22, 163, 74, 0.1)',
+            tension: 0.3,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true, max: 100, ticks: { callback: (v: any) => v + '%' } } },
+        plugins: { legend: { position: 'bottom' } },
+      },
+    });
+  }
+
+  initAgentPerfChart() {
+    const data = this.agentPerformance();
+    if (!data?.length || !this.agentPerfCanvas) return;
+    if (this.agentPerfChartInstance) this.agentPerfChartInstance.destroy();
+
+    this.agentPerfChartInstance = new Chart(this.agentPerfCanvas.nativeElement, {
+      type: 'bar',
+      data: {
+        labels: data.map((a) => a.agent),
+        datasets: [
+          {
+            label: 'Dossiers traités',
+            data: data.map((a) => a.dossiers_traites),
+            backgroundColor: '#2563eb',
+            borderRadius: 4,
+          },
+          {
+            label: 'Taux de réussite (%)',
+            data: data.map((a) => a.taux_reussite),
+            backgroundColor: '#16a34a',
+            borderRadius: 4,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+      },
+    });
   }
 
   openDossiersByStatus(statut: string) {
