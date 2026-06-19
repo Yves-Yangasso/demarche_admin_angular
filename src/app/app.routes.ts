@@ -85,6 +85,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/roles/role-list.component').then(m => m.RoleListComponent)
   },
   {
+    path: 'audit',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/audit/agent-audit.component').then(m => m.AgentAuditComponent)
+  },
+  {
     path: 'parametres',
     canActivate: [authGuard],
     loadComponent: () => import('./features/utilisateurs/parametres.component').then(m => m.ParametresComponent)

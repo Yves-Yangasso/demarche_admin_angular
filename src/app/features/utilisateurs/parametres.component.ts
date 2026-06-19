@@ -122,13 +122,13 @@ import { UtilisateurService } from '../../core/services/utilisateur.service';
     .form-group { margin-bottom: 1.25rem; }
     .form-group label { display: block; font-size: 0.875rem; font-weight: 500; color: #475569; margin-bottom: 0.5rem; }
     .form-group input { width: 100%; padding: 0.625rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.875rem; outline: none; transition: border-color 0.2s; }
-    .form-group input:focus { border-color: #3b82f6; }
+    .form-group input:focus { border-color: var(--primary-color); }
     .form-group input:disabled { background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
     .form-group small { color: #94a3b8; font-size: 0.75rem; margin-top: 0.25rem; display: block; }
     
     .form-actions { margin-top: 1.5rem; }
-    .btn-primary { background: #2563eb; color: white; border: none; padding: 0.625rem 1.25rem; border-radius: 6px; font-weight: 600; cursor: pointer; }
-    .btn-primary:hover { background: #1d4ed8; }
+    .btn-primary { background: var(--primary-color); color: white; border: none; padding: 0.625rem 1.25rem; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    .btn-primary:hover { background: var(--primary-hover); }
     .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
     
     .btn-secondary { background: white; color: #1e293b; border: 1px solid #e2e8f0; padding: 0.625rem 1.25rem; border-radius: 6px; font-weight: 600; cursor: pointer; }

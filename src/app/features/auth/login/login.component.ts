@@ -12,8 +12,7 @@ import { AuthService } from '../../../core/services/auth.service';
     <div class="login-container">
       <div class="login-card">
         <div class="brand">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="logo-svg"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          <h1>SunuDëkk</h1>
+          <img src="logo.png" alt="Logo" class="logo-img">
         </div>
         <p class="subtitle">Espace d'administration</p>
 
@@ -28,7 +27,7 @@ import { AuthService } from '../../../core/services/auth.service';
           <div class="form-group">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <label>Mot de passe</label>
-              <a routerLink="/forgot-password" style="font-size: 0.75rem; color: #2563eb; text-decoration: none; margin-bottom: 0.5rem;">Oublié ?</a>
+              <a routerLink="/forgot-password" style="font-size: 0.75rem; color: var(--primary-color); text-decoration: none; margin-bottom: 0.5rem;">Oublié ?</a>
             </div>
             <div class="input-wrapper">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="input-icon"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -44,7 +43,7 @@ import { AuthService } from '../../../core/services/auth.service';
 
         <div *ngIf="show2FA()" class="fade-in">
           <div style="text-align: center; margin-bottom: 2rem;">
-            <div style="width: 60px; height: 60px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: #2563eb;">
+            <div style="width: 60px; height: 60px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: var(--primary-color);">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
             </div>
             <h2 style="font-size: 1.25rem; font-weight: 700;">Vérification 2FA</h2>
@@ -98,7 +97,7 @@ import { AuthService } from '../../../core/services/auth.service';
       gap: 0.75rem;
       margin-bottom: 0.5rem;
     }
-    .logo-svg { color: #2563eb; }
+    .logo-img { height: 48px; width: auto; object-fit: contain; }
     h1 { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0; }
     .subtitle { color: #64748b; font-size: 0.875rem; margin-bottom: 2.5rem; text-align: center; }
     
@@ -116,12 +115,12 @@ import { AuthService } from '../../../core/services/auth.service';
       outline: none;
       transition: border-color 0.15s ease;
     }
-    input:focus { border-color: #2563eb; }
+    input:focus { border-color: var(--primary-color); }
 
     .btn-login {
       width: 100%;
       padding: 0.75rem;
-      background: #2563eb;
+      background: var(--primary-color);
       color: white;
       border: none;
       border-radius: 8px;
@@ -134,7 +133,7 @@ import { AuthService } from '../../../core/services/auth.service';
       align-items: center;
       transition: background 0.15s ease;
     }
-    .btn-login:hover { background: #1d4ed8; }
+    .btn-login:hover { background: var(--primary-hover); }
     .btn-login:disabled { background: #94a3b8; cursor: not-allowed; }
 
     .error { 

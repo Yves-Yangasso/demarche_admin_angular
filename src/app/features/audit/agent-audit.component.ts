@@ -248,10 +248,10 @@ import { AgentAudit, AuditType, BlockchainAuditBlock, AuditAgentService } from '
     h3 { font-size: 0.88rem; }
     .subtitle, .filters-head p, .detail-head p { margin: 0.25rem 0 0; color: #64748b; font-size: 0.9rem; }
     .btn-primary, .btn-secondary, .btn-view { border: 0; border-radius: 6px; font-weight: 700; padding: 0.65rem 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
-    .btn-primary { background: #2563eb; color: white; }
-    .btn-primary:hover { background: #1d4ed8; }
+    .btn-primary { background: var(--primary-color); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
     .btn-secondary { background: #f1f5f9; color: #475569; }
-    .btn-view { background: #eff6ff; color: #1d4ed8; padding: 0.45rem 0.8rem; }
+    .btn-view { background: var(--primary-light); color: var(--primary-hover); padding: 0.45rem 0.8rem; }
     .btn-view:hover { background: #dbeafe; }
     .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
 
@@ -284,7 +284,7 @@ import { AgentAudit, AuditType, BlockchainAuditBlock, AuditAgentService } from '
     .alert-badge.ok { background: #dcfce7; color: #15803d; }
     .status-badge, .type-badge { display: inline-flex; padding: 0.28rem 0.55rem; border-radius: 6px; font-weight: 800; font-size: 0.72rem; text-transform: uppercase; }
     .status-badge.connecte { background: #dcfce7; color: #15803d; }
-    .status-badge.actif { background: #dbeafe; color: #1d4ed8; }
+    .status-badge.actif { background: #dbeafe; color: var(--primary-hover); }
     .status-badge.hors_ligne { background: #f1f5f9; color: #64748b; }
     .type-badge.initial { background: #e0f2fe; color: #0369a1; }
     .type-badge.update { background: #fef3c7; color: #92400e; }
@@ -295,7 +295,7 @@ import { AgentAudit, AuditType, BlockchainAuditBlock, AuditAgentService } from '
     .section-title.compact p, .journal-subtitle { margin: 0.25rem 0 0; color: #64748b; font-size: 0.86rem; }
     .agent-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0.75rem; }
     .agent-action { text-align: left; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; padding: 0.85rem; cursor: pointer; }
-    .agent-action:hover { border-color: #93c5fd; background: #eff6ff; }
+    .agent-action:hover { border-color: #93c5fd; background: var(--primary-light); }
     .agent-action strong { display: block; color: #0f172a; margin: 0.55rem 0 0.2rem; }
     .agent-action span:last-child { color: #64748b; font-size: 0.82rem; }
     .empty-state { color: #94a3b8; font-size: 0.88rem; padding: 1rem; }
@@ -305,9 +305,9 @@ import { AgentAudit, AuditType, BlockchainAuditBlock, AuditAgentService } from '
     .journal-subtitle { margin-bottom: 1rem; }
     .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35rem; margin: 1rem 0; }
     .tabs button { border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 6px; padding: 0.45rem; color: #475569; font-weight: 800; cursor: pointer; }
-    .tabs button.active { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+    .tabs button.active { background: var(--primary-light); border-color: #93c5fd; color: var(--primary-hover); }
     .action-item { width: 100%; text-align: left; border: 1px solid #e2e8f0; background: white; border-radius: 8px; padding: 0.85rem; cursor: pointer; margin-bottom: 0.65rem; }
-    .action-item.selected, .action-item:hover { border-color: #93c5fd; background: #eff6ff; }
+    .action-item.selected, .action-item:hover { border-color: #93c5fd; background: var(--primary-light); }
     .action-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.6rem; }
     .action-top time { color: #64748b; font-size: 0.75rem; }
     .action-item strong { display: block; color: #0f172a; margin-bottom: 0.25rem; }

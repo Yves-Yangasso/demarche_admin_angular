@@ -277,7 +277,7 @@ Chart.register(...registerables);
     .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-weight: 600; color: #0f172a; }
 
     .status-badge { padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize; }
-    .status-badge.nouveau { background: #eff6ff; color: #2563eb; }
+    .status-badge.nouveau { background: var(--primary-light); color: var(--primary-color); }
     .status-badge.en_cours { background: #fefce8; color: #ca8a04; }
     .status-badge.cloture { background: #f0fdf4; color: #16a34a; }
     .status-badge.rejete { background: #fef2f2; color: #dc2626; }
