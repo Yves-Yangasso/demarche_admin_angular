@@ -5,7 +5,7 @@ WORKDIR /app
 # Variables d'environnement consommees au BUILD via scripts/generate-env.mjs.
 # Override depuis Dokploy (compose build.args) ou en local
 # (docker build --build-arg API_BASE_URL=https://staging-api.exemple.com).
-ARG API_BASE_URL=https://sunudekk-api.djazael.com
+ARG API_BASE_URL=https://sunudekk-api-stag.djazael.com
 ENV API_BASE_URL=${API_BASE_URL}
 
 COPY package.json package-lock.json ./
