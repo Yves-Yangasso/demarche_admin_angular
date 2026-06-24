@@ -451,7 +451,9 @@ import { ToastComponent } from '../toast/toast.component';
         justify-content: center;
         gap: 0;
       }
-      .sidebar-collapsed .brand-name {
+    /* Le logo wordmark est illisible en mode collapsed (sidebar etroite) ;
+       on le masque plutot que de le compresser pour ne pas pixeliser le brand. */
+      .sidebar-collapsed .brand-logo {
         display: none;
       }
 

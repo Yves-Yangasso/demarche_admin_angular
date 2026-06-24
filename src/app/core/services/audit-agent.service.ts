@@ -1,4 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 export type AuditType = 'initial' | 'update' | 'delete';
 
@@ -21,7 +23,20 @@ export interface AuditChange {
   valeur?: string;
 }
 
-export interface BlockchainAuditBlock {
+/**
+ * Une entrée du journal d'audit, enrichie côté front d'un hash chaîné de
+ * vérification (visualisation pédagogique pour l'agent).
+ *
+ * NB : la garantie cryptographique réelle est portée par le backend
+ * (table `audit_logs` PostgreSQL append-only + colonnes `signature` et
+ * `previous_hash` à activer via flag `AUDIT_CRYPTO_ENABLED`, cf.
+ * `app/models/audit.py` et `app/services/audit_crypto.py`).
+ *
+ * Le `hash` calculé ici ne fait foi de rien - c'est un FNV simple, lisible
+ * par un humain. Quand le flag backend sera ON, on remplacera ce hash par
+ * la `signature` HMAC servie par l'API et la vérification deviendra réelle.
+ */
+export interface AuditEntry {
   index: number;
   timestamp: string;
   agent: string;
@@ -39,163 +54,195 @@ export interface BlockchainAuditBlock {
   deleted: AuditChange[];
 }
 
-@Injectable({
-  providedIn: 'root'
-})
-export class AuditAgentService {
-  private readonly agentsData: AgentAudit[] = [
-    {
-      id: 1,
-      nom: 'Aminata Diop',
-      role: 'Agent etat civil',
-      derniere_connexion: '2026-06-18T08:12:00',
-      dossiers_traites: 34,
-      dossiers_consultes: 58,
-      dossiers_valides: 21,
-      alertes: 0,
-      statut: 'connecte'
-    },
-    {
-      id: 2,
-      nom: 'Mamadou Fall',
-      role: 'Superviseur dossiers',
-      derniere_connexion: '2026-06-18T07:45:00',
-      dossiers_traites: 29,
-      dossiers_consultes: 44,
-      dossiers_valides: 26,
-      alertes: 1,
-      statut: 'actif'
-    },
-    {
-      id: 3,
-      nom: 'Fatou Ndiaye',
-      role: 'Agent urbanisme',
-      derniere_connexion: '2026-06-17T16:20:00',
-      dossiers_traites: 18,
-      dossiers_consultes: 31,
-      dossiers_valides: 12,
-      alertes: 0,
-      statut: 'hors_ligne'
-    },
-    {
-      id: 4,
-      nom: 'Cheikh Ba',
-      role: 'Controle interne',
-      derniere_connexion: '2026-06-18T09:03:00',
-      dossiers_traites: 12,
-      dossiers_consultes: 63,
-      dossiers_valides: 8,
-      alertes: 2,
-      statut: 'connecte'
-    }
-  ];
+interface AuditLogRow {
+  id: number;
+  acteur_id: number | null;
+  action: string;
+  entity_type: string;
+  entity_id: number | null;
+  payload_before: Record<string, unknown> | null;
+  payload_after: Record<string, unknown> | null;
+  ip: string | null;
+  user_agent: string | null;
+  collectivite_id: number | null;
+  created_at: string | null;
+}
 
-  agents = signal<AgentAudit[]>(this.agentsData);
-  blockchain = signal<BlockchainAuditBlock[]>(this.createBlockchain());
+interface AuditListResponse {
+  logs: AuditLogRow[];
+  total: number;
+  pages: number;
+  page: number;
+}
+
+interface AgentPerf {
+  agent: string;
+  dossiers_traites: number;
+  taux_reussite: number;
+}
+
+/**
+ * B6 - Service connecté au vrai backend (`GET /api/audit` + `GET /api/stats/agent-performance`).
+ *
+ * Expose deux signals - `agents` (perf agrégée) et `entries` (journal d'audit
+ * chainé pour visualisation). Charge les données au démarrage (fire-and-forget)
+ * et expose `refresh()` pour rejouer la récupération.
+ *
+ * Le hash de chaque entrée est un FNV-like local pour visualisation ; la
+ * véritable intégrité vient du backend (table append-only + signature HMAC
+ * optionnelle).
+ */
+@Injectable({ providedIn: 'root' })
+export class AuditAgentService {
+  private http = inject(HttpClient);
+  private apiBase = '/api';
+
+  agents = signal<AgentAudit[]>([]);
+  entries = signal<AuditEntry[]>([]);
+
+  constructor() {
+    // Chargement initial - non bloquant.
+    void this.refresh();
+  }
+
+  async refresh(): Promise<void> {
+    try {
+      const [logsResp, perfResp] = await Promise.all([
+        firstValueFrom(
+          this.http.get<AuditListResponse>(`${this.apiBase}/audit`, {
+            params: { per_page: 50 },
+          }),
+        ).catch(() => ({ logs: [], total: 0, pages: 0, page: 1 } as AuditListResponse)),
+        firstValueFrom(
+          this.http.get<AgentPerf[]>(`${this.apiBase}/stats/agent-performance`),
+        ).catch(() => [] as AgentPerf[]),
+      ]);
+
+      this.agents.set(this.mapAgents(perfResp));
+      this.entries.set(this.mapEntries(logsResp.logs));
+    } catch {
+      // Si tout échoue (ex: pas connecté), on laisse les signals vides
+      // plutôt que d'exposer des données mockées trompeuses.
+      this.agents.set([]);
+      this.entries.set([]);
+    }
+  }
 
   verifierChaine(): boolean {
-    const blocks = this.blockchain();
-
+    const blocks = this.entries();
+    if (blocks.length === 0) return true;
     return blocks.every((block, index) => {
-      const expectedHash = this.hashBlock(block);
-      const validPreviousHash = index === blocks.length - 1 || block.previousHash === blocks[index + 1].hash;
-
+      const expectedHash = this.computeEntryHash(block);
+      const validPreviousHash =
+        index === blocks.length - 1 || block.previousHash === blocks[index + 1].hash;
       return block.hash === expectedHash && validPreviousHash && block.valide;
     });
   }
 
-  ajouterEvenement(agent: string, type: AuditType, dossier: string) {
-    const blocks = this.blockchain();
+  ajouterEvenement(agent: string, type: AuditType, dossier: string): void {
+    // Helper conservé pour compat : enregistre un évènement local seulement.
+    // Pour persister, appeler une route métier - c'est elle qui écrira un AuditLog.
+    const blocks = this.entries();
     const previousHash = blocks[0]?.hash || 'GENESIS';
-    const timestamp = new Date().toISOString();
-    const index = blocks.length + 1;
-    const event = this.createEvent(index, previousHash, {
-      timestamp,
+    const event: Partial<AuditEntry> = {
+      timestamp: new Date().toISOString(),
       agent,
       type,
       dossier,
-      action: this.actionByType(type),
+      action: this.actionLabel(type),
       module: 'Dossiers',
-      ip: '197.255.12.44',
-      device: 'Poste admin mairie'
-    });
-
-    this.blockchain.set([event, ...blocks]);
+      ip: '127.0.0.1',
+      device: 'Web admin',
+    };
+    const block = this.buildBlock(blocks.length + 1, previousHash, event);
+    this.entries.set([block, ...blocks]);
   }
 
-  private createBlockchain(): BlockchainAuditBlock[] {
-    const events = [
-      {
-        agent: 'Aminata Diop',
-        action: 'Creation du dossier',
-        type: 'initial' as AuditType,
-        dossier: 'DOS-2026-00421',
-        module: 'Etat civil',
-        ip: '197.255.12.17',
-        device: 'Chrome Windows',
-        timestamp: '2026-06-18T08:31:00',
-        initial: [
-          { champ: 'statut', valeur: 'Nouveau' },
-          { champ: 'priorite', valeur: 'Normale' },
-          { champ: 'citoyen', valeur: 'Mariama Sarr' }
-        ]
-      },
-      {
-        agent: 'Mamadou Fall',
-        action: 'Modification du statut',
-        type: 'update' as AuditType,
-        dossier: 'DOS-2026-00412',
-        module: 'Validation',
-        ip: '197.255.12.19',
-        device: 'Firefox Windows',
-        timestamp: '2026-06-18T08:04:00',
-        updates: [
-          { champ: 'statut', avant: 'En cours', apres: 'En validation' },
-          { champ: 'agent_assignation', avant: 'Non assigne', apres: 'Mamadou Fall' }
-        ]
-      },
-      {
-        agent: 'Cheikh Ba',
-        action: 'Suppression de piece jointe',
-        type: 'delete' as AuditType,
-        dossier: 'DOS-2026-00398',
-        module: 'Documents',
-        ip: '197.255.12.24',
-        device: 'Edge Windows',
-        timestamp: '2026-06-18T07:58:00',
-        deleted: [
-          { champ: 'document', valeur: 'ancien_certificat_residence.pdf' },
-          { champ: 'motif', valeur: 'Document remplace par une version certifiee' }
-        ]
-      },
-      {
-        agent: 'Fatou Ndiaye',
-        action: 'Correction des informations',
-        type: 'update' as AuditType,
-        dossier: 'DOS-2026-00372',
-        module: 'Urbanisme',
-        ip: '197.255.12.31',
-        device: 'Chrome Android',
-        timestamp: '2026-06-17T16:05:00',
-        updates: [
-          { champ: 'adresse_parcelle', avant: 'Nord foire lot 18', apres: 'Nord foire lot 18B' },
-          { champ: 'surface', avant: '180 m2', apres: '182 m2' }
-        ]
-      }
-    ];
+  // ─── Mapping ──────────────────────────────────────────────────────────────
 
-    return events.reduce<BlockchainAuditBlock[]>((chain, event, idx) => {
-      const index = idx + 1;
+  private mapAgents(perf: AgentPerf[]): AgentAudit[] {
+    return perf.map((p, i) => ({
+      id: i + 1,
+      nom: p.agent,
+      role: 'Agent',
+      derniere_connexion: '',
+      dossiers_traites: p.dossiers_traites,
+      dossiers_consultes: 0,
+      dossiers_valides: Math.round(p.dossiers_traites * (p.taux_reussite / 100)),
+      alertes: p.dossiers_traites - Math.round(p.dossiers_traites * (p.taux_reussite / 100)),
+      statut: 'actif',
+    }));
+  }
+
+  private mapEntries(logs: AuditLogRow[]): AuditEntry[] {
+    // On reçoit les logs en ordre antichronologique (cf. routes/audit.py).
+    // On les passe en ordre chronologique pour calculer la chaîne, puis on inverse.
+    const ordered = [...logs].reverse();
+    const chain: AuditEntry[] = [];
+    ordered.forEach((log, idx) => {
       const previousHash = chain[idx - 1]?.hash || 'GENESIS';
-      const block = this.createEvent(index, previousHash, event);
-
-      chain.push(block);
-      return chain;
-    }, []).reverse();
+      chain.push(this.fromAuditLog(idx + 1, previousHash, log));
+    });
+    return chain.reverse();
   }
 
-  private createEvent(index: number, previousHash: string, event: Partial<BlockchainAuditBlock>): BlockchainAuditBlock {
-    const block: BlockchainAuditBlock = {
+  private fromAuditLog(
+    index: number,
+    previousHash: string,
+    log: AuditLogRow,
+  ): AuditEntry {
+    const type = this.inferType(log.action);
+    const diff = this.diffPayloads(log.payload_before, log.payload_after);
+    return this.buildBlock(index, previousHash, {
+      timestamp: log.created_at ?? new Date().toISOString(),
+      agent: log.acteur_id ? `acteur#${log.acteur_id}` : 'systeme',
+      action: log.action,
+      type,
+      dossier: log.entity_id ? `${log.entity_type}#${log.entity_id}` : log.entity_type,
+      module: log.entity_type,
+      ip: log.ip ?? '',
+      device: log.user_agent?.slice(0, 60) ?? '',
+      initial: type === 'initial' ? diff : [],
+      updates: type === 'update' ? diff : [],
+      deleted: type === 'delete' ? diff : [],
+    });
+  }
+
+  private inferType(action: string): AuditType {
+    if (action.endsWith('_CREATED')) return 'initial';
+    if (action.endsWith('_DELETED') || action === 'USER_BLOCKED') return 'delete';
+    return 'update';
+  }
+
+  private diffPayloads(
+    before: Record<string, unknown> | null,
+    after: Record<string, unknown> | null,
+  ): AuditChange[] {
+    if (!before && !after) return [];
+    if (!before && after) {
+      return Object.entries(after).map(([k, v]) => ({ champ: k, valeur: String(v) }));
+    }
+    if (before && !after) {
+      return Object.entries(before).map(([k, v]) => ({ champ: k, valeur: String(v) }));
+    }
+    const keys = new Set([...Object.keys(before!), ...Object.keys(after!)]);
+    const out: AuditChange[] = [];
+    keys.forEach((k) => {
+      const a = before?.[k];
+      const b = after?.[k];
+      if (a !== b) {
+        out.push({ champ: k, avant: a !== undefined ? String(a) : '', apres: b !== undefined ? String(b) : '' });
+      }
+    });
+    return out;
+  }
+
+  private buildBlock(
+    index: number,
+    previousHash: string,
+    event: Partial<AuditEntry>,
+  ): AuditEntry {
+    const block: AuditEntry = {
       index,
       previousHash,
       timestamp: event.timestamp || new Date().toISOString(),
@@ -203,33 +250,25 @@ export class AuditAgentService {
       action: event.action || '',
       type: event.type || 'update',
       dossier: event.dossier || '',
-      module: event.module || 'Dossiers',
-      ip: event.ip || '197.255.12.44',
-      device: event.device || 'Poste agent',
+      module: event.module || 'audit',
+      ip: event.ip || '',
+      device: event.device || '',
       valide: true,
       hash: '',
-      initial: event.initial || (event.type === 'initial' ? [
-        { champ: 'statut', valeur: 'Nouveau' },
-        { champ: 'canal', valeur: 'Guichet admin' }
-      ] : []),
-      updates: event.updates || (event.type === 'update' ? [
-        { champ: 'statut', avant: 'Nouveau', apres: 'En cours' }
-      ] : []),
-      deleted: event.deleted || (event.type === 'delete' ? [
-        { champ: 'element', valeur: 'Piece obsolete' }
-      ] : [])
+      initial: event.initial || [],
+      updates: event.updates || [],
+      deleted: event.deleted || [],
     };
-
-    return { ...block, hash: this.hashBlock(block) };
+    return { ...block, hash: this.computeEntryHash(block) };
   }
 
-  private actionByType(type: AuditType): string {
+  private actionLabel(type: AuditType): string {
     if (type === 'initial') return 'Enregistrement initial';
     if (type === 'delete') return 'Suppression controlee';
     return 'Modification de donnees';
   }
 
-  private hashBlock(block: BlockchainAuditBlock): string {
+  private computeEntryHash(block: AuditEntry): string {
     const payload = {
       index: block.index,
       timestamp: block.timestamp,
@@ -241,16 +280,14 @@ export class AuditAgentService {
       previousHash: block.previousHash,
       initial: block.initial,
       updates: block.updates,
-      deleted: block.deleted
+      deleted: block.deleted,
     };
     const input = JSON.stringify(payload);
     let hash = 0;
-
     for (let i = 0; i < input.length; i++) {
       hash = (hash << 5) - hash + input.charCodeAt(i);
       hash |= 0;
     }
-
     return `0x${Math.abs(hash).toString(16).padStart(8, '0')}`;
   }
 }

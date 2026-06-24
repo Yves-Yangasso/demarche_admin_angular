@@ -5,7 +5,7 @@ import { LayoutComponent } from '../../shared/components/layout/layout.component
 import {
   AgentAudit,
   AuditType,
-  BlockchainAuditBlock,
+  AuditEntry,
   AuditAgentService,
 } from '../../core/services/audit-agent.service';
 
@@ -69,7 +69,7 @@ type SortDir = 'asc' | 'desc';
           }}</span>
         </section>
         <section class="kpi-card security" [class.warning]="!chaineValide()">
-          <span class="label">Blockchain audit</span>
+          <span class="label">Suivi d'audit</span>
           <strong>
             <svg
               class="chain-icon"
@@ -89,7 +89,7 @@ type SortDir = 'asc' | 'desc';
             </svg>
             {{ chaineValide() ? 'Validée' : 'À vérifier' }}
           </strong>
-          <span class="kpi-sub">{{ blockchain().length }} bloc(s) enregistré(s)</span>
+          <span class="kpi-sub">{{ entries().length }} entrée(s) enregistrée(s)</span>
         </section>
       </div>
 
@@ -294,7 +294,7 @@ type SortDir = 'asc' | 'desc';
           >
             <span class="type-badge" [ngClass]="block.type">{{ block.type }}</span>
             <strong>{{ block.action }}</strong>
-            <span>{{ block.dossier }} — {{ block.timestamp | date: 'dd/MM/yyyy HH:mm' }}</span>
+            <span>{{ block.dossier }} - {{ block.timestamp | date: 'dd/MM/yyyy HH:mm' }}</span>
           </button>
           <div class="empty-state inline" *ngIf="actionsForAgent(agent.nom).length === 0">
             Aucune action récente pour cet agent.
@@ -305,7 +305,7 @@ type SortDir = 'asc' | 'desc';
       <div class="audit-layout">
         <section class="card actions-card">
           <div class="section-title">
-            <h2>Journal blockchain</h2>
+            <h2>Journal d'audit</h2>
             <span>{{ filteredBlocks().length }} trace(s)</span>
           </div>
           <p class="journal-subtitle">
@@ -337,7 +337,7 @@ type SortDir = 'asc' | 'desc';
                 <time>{{ block.timestamp | date: 'dd/MM/yyyy HH:mm' }}</time>
               </div>
               <strong>{{ block.action }}</strong>
-              <span>{{ block.agent }} — {{ block.dossier }}</span>
+              <span>{{ block.agent }} - {{ block.dossier }}</span>
             </button>
           </ng-container>
 
@@ -1152,7 +1152,7 @@ export class AgentAuditComponent {
   dateFin = '';
 
   agents = this.auditService.agents;
-  blockchain = this.auditService.blockchain;
+  entries = this.auditService.entries;
   selectedHash = signal<string>('');
   selectedAgent = signal<AgentAudit | null>(null);
   copiedHash = signal<string>('');
@@ -1174,10 +1174,10 @@ export class AgentAuditComponent {
   connectedCount = computed(
     () => this.agents().filter((agent) => agent.statut === 'connecte').length,
   );
-  modules = computed(() => Array.from(new Set(this.blockchain().map((block) => block.module))));
-  selectedBlock = computed<BlockchainAuditBlock | null>(
+  modules = computed(() => Array.from(new Set(this.entries().map((block) => block.module))));
+  selectedBlock = computed<AuditEntry | null>(
     () =>
-      this.blockchain().find((block) => block.hash === this.selectedHash()) ||
+      this.entries().find((block) => block.hash === this.selectedHash()) ||
       this.filteredBlocks()[0] ||
       null,
   );
@@ -1231,12 +1231,12 @@ export class AgentAuditComponent {
     }
   }
 
-  filteredBlocks(): BlockchainAuditBlock[] {
+  filteredBlocks(): AuditEntry[] {
     const search = this.search.trim().toLowerCase();
     const start = this.dateDebut ? new Date(`${this.dateDebut}T00:00:00`).getTime() : null;
     const end = this.dateFin ? new Date(`${this.dateFin}T23:59:59`).getTime() : null;
 
-    return this.blockchain().filter((block) => {
+    return this.entries().filter((block) => {
       const blockTime = new Date(block.timestamp).getTime();
       const searchable =
         `${block.agent} ${block.action} ${block.dossier} ${block.module}`.toLowerCase();
@@ -1252,7 +1252,7 @@ export class AgentAuditComponent {
 
   totalPages = computed(() => Math.max(1, Math.ceil(this.filteredBlocks().length / this.pageSize)));
 
-  pagedBlocks(): BlockchainAuditBlock[] {
+  pagedBlocks(): AuditEntry[] {
     const blocks = this.filteredBlocks();
     const currentPage = Math.min(this.page(), this.totalPages());
     const startIndex = (currentPage - 1) * this.pageSize;
@@ -1278,7 +1278,7 @@ export class AgentAuditComponent {
       .join('');
   }
 
-  selectBlock(block: BlockchainAuditBlock) {
+  selectBlock(block: AuditEntry) {
     this.selectedHash.set(block.hash);
   }
 
@@ -1294,8 +1294,8 @@ export class AgentAuditComponent {
     this.selectedAgent.set(null);
   }
 
-  actionsForAgent(agentName: string): BlockchainAuditBlock[] {
-    return this.blockchain().filter((block) => block.agent === agentName);
+  actionsForAgent(agentName: string): AuditEntry[] {
+    return this.entries().filter((block) => block.agent === agentName);
   }
 
   copyHash(hash: string) {
